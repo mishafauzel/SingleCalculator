@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">EngineerCalculator</string>
+    <string name="text_size">"36sp"</string>
+
+        <string-array name="second_panel_first_state">
+            <item>2nd</item>
+            <item>Rad</item>
+            <item>Sqrt</item>
+            <item>sin</item>
+            <item>cos</item>
+            <item>tan</item>
+            <item>ln</item>
+            <item>log</item>
+            <item>1/x</item>
+            <item>e^x</item>
+            <item>x^2</item>
+            <item>x^y</item>
+            <item>|x|</item>
+            <item>Pi</item>
+            <item>e</item>
+        </string-array>
+    <string-array name="second_panel_tags">
+        <item>Sqrt(</item>
+        <item>sin(</item>
+        <item>cos(</item>
+        <item>tan(</item>
+        <item>ln(</item>
+        <item>lg(</item>
+        <item>1/</item>
+        <item>^(2)</item>
+        <item>^</item>
+        <item>Pi</item>
+        <item>e</item>
+        <item>2nd</item>
+        <item>Rad</item>
+        <item>|x|</item>
+    </string-array>
+    <string-array name="second_panel_second_state">
+        <item>1st</item>
+        <item>Rad</item>
+        <item>Abs</item>
+        <item>sin</item>
+        <item>cos</item>
+        <item>tan</item>
+        <item>ln</item>
+        <item>log</item>
+        <item>1/x</item>
+        <item>e^x</item>
+        <item>x^2</item>
+        <item>x^y</item>
+        <item>|x|</item>
+        <item>Pi</item>
+        <item>e</item>
+
+    </string-array>
+    <string-array name="first_panel_labels">
+        <item></item>
+    </string-array>
+
+</resources>
