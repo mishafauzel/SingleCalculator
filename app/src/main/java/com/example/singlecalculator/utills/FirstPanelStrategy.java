@@ -1,10 +1,10 @@
 package com.example.singlecalculator.utills;
 
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.singlecalculator.R;
 import com.example.singlecalculator.utills.calculations.Calculator;
+import com.example.singlecalculator.utills.equation.Equation;
 import com.example.singlecalculator.utills.onClickListeners.DiggitsClickListener;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategiesInterface;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategyOwner;
@@ -13,7 +13,7 @@ public class FirstPanelStrategy implements StrategiesInterface {
     private final int[] idsOfButtons=new int[]{
             R.id.delete_button, R.id.branches,R.id.equals, R.id.changeSign,R.id.percent,R.id.divide,
             R.id.multiply, R.id.minus,R.id.plus,R.id.dot
-            ,R.id.number7,R.id.number8,R.id.number8, R.id.number6,
+            ,R.id.number7,R.id.number8,R.id.number9, R.id.number6,
             R.id.number5,R.id.number4, R.id.number3,R.id.number2,R.id.number1,R.id.number0
 
     };
@@ -56,7 +56,7 @@ public class FirstPanelStrategy implements StrategiesInterface {
         onClicListener.setEquation(equation);
       for(int i = 0; i < buttons.length; i++)
       {
-          buttons[i].setTag(buttonTypes[i].setText(buttons[i].getText().toString()));
+          buttons[i].setTag(buttonTypes[i].setText(buttons[i].getText().toString().charAt(0)));
           buttons[i].setOnClickListener(onClicListener);
 
     }
@@ -69,8 +69,9 @@ public class FirstPanelStrategy implements StrategiesInterface {
         buttonTypes[2]= new ButtonsTag(ButtonsTag.ButtonType.equals);
         buttonTypes[3]= new ButtonsTag(ButtonsTag.ButtonType.chengeSign);
         buttonTypes[4]= new ButtonsTag(ButtonsTag.ButtonType.percent);
-        for(int i = 5; i <= 9; i++ )
+        for(int i = 5; i < 9; i++ )
             buttonTypes[i]= new ButtonsTag(ButtonsTag.ButtonType.action);
+        buttonTypes[9]=new ButtonsTag(ButtonsTag.ButtonType.dot);
         for(int i = 10; i < buttonTypes.length; i++)
             buttonTypes[i]= new ButtonsTag(ButtonsTag.ButtonType.digit);
 

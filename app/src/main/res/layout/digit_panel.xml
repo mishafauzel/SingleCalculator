@@ -218,7 +218,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="#F44336"
+            android:background="@drawable/action_number_color"
             android:gravity="center"
             android:text="+/-"
             android:textSize="@dimen/text_size" />
@@ -228,7 +228,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/action_number_color"
+            android:background="@drawable/number_button_color"
             android:gravity="center"
             android:text="0"
             android:textSize="@dimen/text_size" />
@@ -248,7 +248,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="#F44336"
+            android:background="@drawable/action_number_color"
             android:gravity="center"
             android:text="="
             android:textSize="@dimen/text_size" />

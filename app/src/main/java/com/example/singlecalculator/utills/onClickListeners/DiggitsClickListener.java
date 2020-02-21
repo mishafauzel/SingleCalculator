@@ -2,12 +2,9 @@ package com.example.singlecalculator.utills.onClickListeners;
 
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-
-import androidx.lifecycle.ViewModel;
 
 import com.example.singlecalculator.utills.ButtonsTag;
-import com.example.singlecalculator.utills.Equation;
+import com.example.singlecalculator.utills.equation.Equation;
 import com.example.singlecalculator.utills.calculations.Calculator;
 
 public class DiggitsClickListener implements View.OnClickListener {
@@ -35,7 +32,7 @@ public class DiggitsClickListener implements View.OnClickListener {
                 equation.addAction(tag);
                 break;
             case delete:
-                equation.delete();
+                equation.clearAll();
                 break;
             case equals:
                 calculator.calculate(equation);
@@ -49,6 +46,10 @@ public class DiggitsClickListener implements View.OnClickListener {
             case chengeSign:
                 equation.changeSign();
                 break;
+            case dot:
+                equation.addDot();
+                break;
+
         }
 
     }

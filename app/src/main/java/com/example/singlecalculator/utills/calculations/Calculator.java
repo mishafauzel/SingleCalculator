@@ -1,6 +1,6 @@
 package com.example.singlecalculator.utills.calculations;
 
-import com.example.singlecalculator.utills.Equation;
+import com.example.singlecalculator.utills.equation.Equation;
 
 public class Calculator {
     private static Calculator instanse;

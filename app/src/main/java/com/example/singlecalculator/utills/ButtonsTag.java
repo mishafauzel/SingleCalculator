@@ -1,17 +1,21 @@
 package com.example.singlecalculator.utills;
 
 public class ButtonsTag {
-    public String text;
+    private Character text;
     public ButtonType buttonType;
 
     public ButtonsTag(ButtonType buttonType) {
         this.buttonType = buttonType;
     }
-    public ButtonsTag setText(String text) {
+    public ButtonsTag setText(Character text) {
 
         this.text=text;
 
         return this;
+    }
+
+    public Character getText() {
+        return text;
     }
 
     @Override
@@ -22,7 +26,7 @@ public class ButtonsTag {
                 '}';
     }
 
-    public enum ButtonType{digit,action,delete,branches,equals,chengeSign,percent};
+    public enum ButtonType{digit,action,delete,branches,equals,chengeSign,percent,dot};
 
 
 

@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">EngineerCalculator</string>
     <string name="text_size">"36sp"</string>
+    <string name="maxLength">Maximum length of number is 15</string>
 
-        <string-array name="second_panel_first_state">
+    <string-array name="second_panel_first_state">
             <item>2nd</item>
             <item>Rad</item>
             <item>Sqrt</item>
