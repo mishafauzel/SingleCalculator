@@ -38,7 +38,7 @@ public class Equation  {
     };
 
     private Equation() {
-
+        cursorPosition=0;
     }
     public static Equation getInstance(EditText equation)
     {
@@ -88,7 +88,9 @@ public class Equation  {
             {
                 equation.getText().insert(cursorPosition,tag.getText().toString());
                 equationTreeSet.add(new Action(cursorPosition,tag.getText().toString()));
+
                 cursorPosition++;
+                equationTreeSet.add(closestNumber=new Numbers(cursorPosition));
                 prinOutActions();
             }
 
@@ -132,7 +134,7 @@ public class Equation  {
                 Log.d(TAG, "findClosestNumberToCursor: "+element.toDocumentationString());
                 if(element.getPosition()<=cursorPosition) {
                     Log.d(TAG, "findClosestNumberToCursor: "+element.toDocumentationString());
-                    if (((Numbers) element).getLastPosition() >= cursorPosition) {
+                    if (((Numbers) element).getLastPosition() >= cursorPosition-1) {
                         return (Numbers) element;
                     }
                 }
@@ -143,14 +145,14 @@ public class Equation  {
     }
     private void increasePosition(ElementOfEquation element,int increasedSize)
     {
-        if(equationTreeSet.size()>1) {
-            SortedSet<ElementOfEquation> subSet = equationTreeSet.tailSet(element);
+
+            SortedSet<ElementOfEquation> subSet = equationTreeSet.headSet(element,false);
             Log.d(TAG, "increasePosition: " + subSet.size());
             for (ElementOfEquation nextElement :
                     subSet) {
                 nextElement.increasePosition(increasedSize);
             }
-        }
+
     }
     private boolean[] checkAreNeightboorsActions(int positionOfCursor) {
         boolean isBeforeAction=false;
@@ -176,8 +178,12 @@ public class Equation  {
 
     public void clearAll()
     {
-        equation.getText().delete(0,equation.getText().length()-1);
+        equation.getText().delete(0,equation.getText().length());
        equationTreeSet.clear();
+        Log.d(TAG, "clearAll: size Of tree"+equationTreeSet.size());
+       cursorPosition=0;
+       closestNumber=null;
+
     }
 
     public void delete() {
@@ -200,24 +206,25 @@ public class Equation  {
 
         int increasingSize=-1;
         Log.d(TAG, "changeSign: position"+closestNumber.getPosition());
+        if(closestNumber.getSize()!=0) {
+            if (!closestNumber.isMinus()) {
+                equation.getText().insert(closestNumber.getPosition(), "-");
+                increasingSize = 1;
+            } else {
+                equation.getText().delete(closestNumber.getPosition(), closestNumber.getPosition() + 1);
+                increasingSize = -1;
+            }
+            closestNumber.setMinus(!closestNumber.isMinus());
 
-        if(!closestNumber.isMinus())
-        {
-            equation.getText().insert(closestNumber.getPosition(),"-");
-            increasingSize=1;
+            Log.d(TAG, "changeSign: " + closestNumber.isMinus());
+            increasePosition(closestNumber, increasingSize);
         }
-        else
-        {
-            equation.getText().delete(closestNumber.getPosition(),1);
-            increasingSize=-1;
-        }
-        closestNumber.setMinus(!closestNumber.isMinus());
-
-        Log.d(TAG, "changeSign: "+closestNumber.isMinus());
-        increasePosition(closestNumber,increasingSize);
     }
 
     public void addDot() {
+
+            closestNumber.addDot(cursorPosition);
+
     }
     private void prinOutActions()
     {

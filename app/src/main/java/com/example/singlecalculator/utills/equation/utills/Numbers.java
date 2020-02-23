@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.singlecalculator.utills.equation.exceptions.NumbersToBigForUniting;
 import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 
 import java.lang.reflect.Array;
@@ -26,9 +27,11 @@ public class Numbers extends ElementOfEquation {
 
     public boolean insertNewDiggits(char newDgt,int insertPosition)
     {
+        Log.d(TAG, "insertNewDiggits: firstPositionOfNumber"+position);
+        Log.d(TAG, "insertNewDiggits: cursorPosition"+insertPosition);
         if(arrayOfDiggits.size()<15)
         {
-            arrayOfDiggits.add(insertPosition,newDgt);
+            arrayOfDiggits.add(insertPosition-position,newDgt);
             return true;
 
         }
@@ -56,7 +59,8 @@ public class Numbers extends ElementOfEquation {
     {
         int minusSize=isMinus?1:0;
         int dotSize=hasDot?1:0;
-        return position+arrayOfDiggits.size()+minusSize+dotSize;
+        int sizrOfDiggits=arrayOfDiggits.size()==0?0:arrayOfDiggits.size()-1;
+        return position+sizrOfDiggits+minusSize+dotSize;
     }
 
     public boolean isHasDot() {
@@ -88,6 +92,10 @@ public class Numbers extends ElementOfEquation {
     public String toDocumentationString() {
         return new StringBuilder().append("number").append(" ").append(position).append(" ").append(getLastPosition()).append("\n").toString();
     }
+    public int getSize()
+    {
+       return arrayOfDiggits.size();
+    }
 
     public Numbers separateNumber(int cursorPosition) {
         ArrayList<Character> newNumberDiggits=new ArrayList<>();
@@ -101,5 +109,40 @@ public class Numbers extends ElementOfEquation {
         }
         arrayOfDiggits.removeAll(newNumberDiggits);
         return new Numbers(cursorPosition,newNumberDiggits);
+    }
+    public Numbers uniteNumber(Numbers numbers) throws NumbersToBigForUniting
+    {
+        if(this.arrayOfDiggits.size()+numbers.arrayOfDiggits.size()>15)
+            throw new NumbersToBigForUniting(this,numbers);
+        else
+        {
+
+            for (Character character :
+                this.arrayOfDiggits) {
+                numbers.arrayOfDiggits.add(character);
+            }
+            this.arrayOfDiggits.clear();
+        }
+        return numbers;
+    }
+
+    public boolean addDot(int cursorPosition) {
+        if(!hasDot)
+        {
+
+            dotPosition=cursorPosition-position;
+            hasDot=true;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+
+    }
+    public void deleteDot()
+    {
+
     }
 }
