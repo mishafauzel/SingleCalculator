@@ -27,7 +27,7 @@ public class Numbers extends ElementOfEquation {
 
     public boolean increaseNumberOfDigits(int increasingSize)
     {
-    if(numberOfDigits<=NAXIMUM_NUMBER_SIZE||increasingSize<0)
+    if(numberOfDigits<NAXIMUM_NUMBER_SIZE||increasingSize<0)
     {
         numberOfDigits=numberOfDigits+increasingSize;
         return true;

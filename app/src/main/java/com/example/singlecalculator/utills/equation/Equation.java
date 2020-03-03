@@ -21,7 +21,7 @@ import java.util.TreeSet;
 public class Equation {
     private static final String TAG = "Equation";
     private EditText equation;
-    private int cursorPosition;
+    private int cursorPosition=0;
     private Numbers closestNumber;
 
     private TreeSet<ElementOfEquation> equationTreeSet = new TreeSet<>();
@@ -39,6 +39,7 @@ public class Equation {
 
     private Equation() {
         cursorPosition = 0;
+        equationTreeSet.add(closestNumber=new Numbers(0));
     }
 
     public static Equation getInstance(EditText equation) {
@@ -59,19 +60,14 @@ public class Equation {
     private void addSymbolToEditTextAndIncreaseCursorPosition(Character addingChar, int sizeOfAdding)
     {
         equation.getText().insert(cursorPosition, addingChar.toString());
-        cursorPosition++;
+        cursorPosition=cursorPosition+sizeOfAdding;
     }
     public void addDigits(ButtonsTag tag) {
-
+        if(closestNumber!=null)
+        {
         Character text = tag.getText();
-        if (closestNumber == null) {
-            equationTreeSet.add(closestNumber = new Numbers(0));
-            closestNumber.increaseNumberOfDigits(1);
-            addSymbolToEditTextAndIncreaseCursorPosition(text,1);
-            printOutNumbers();
-            return;
-        }
-        Log.d(TAG, "addDigits: " + equation.getSelectionStart());
+
+
         if (closestNumber.increaseNumberOfDigits(1)) {
             addSymbolToEditTextAndIncreaseCursorPosition(text,1);
             increasePosition(closestNumber,1,false);
@@ -80,7 +76,7 @@ public class Equation {
         Log.d(TAG, "addDigits: " + closestNumber.toString());
         Log.d(TAG, "addDigits: " + cursorPosition);
         Log.d(TAG, "addDigits: " + equation.length());
-        printOutNumbers();
+        printOutNumbers();}
     }
 
 
@@ -125,6 +121,23 @@ public class Equation {
         }
     }
 
+    public void addBranches() {
+        if(cursorPosition==0)
+        {
+            Branch branch=new Branch(cursorPosition,true);
+            increasePosition(closestNumber,1,true);
+            equationTreeSet.add(branch);
+            addSymbolToEditTextAndIncreaseCursorPosition('(',1);
+        }
+        else
+        {
+
+
+        }
+
+
+
+    }
     private Numbers findClosestNumberToCursor(int cursorPosition) {
         for (ElementOfEquation element :
                 equationTreeSet) {
@@ -142,13 +155,13 @@ public class Equation {
     }
 
     private void increasePosition(ElementOfEquation element, int increasedSize,boolean includeClosestNumber) {
-
+        if(element!=null){
         SortedSet<ElementOfEquation> subSet = equationTreeSet.tailSet(element, includeClosestNumber);
         Log.d(TAG, "increasePosition: " + subSet.size());
         for (ElementOfEquation nextElement :
                 subSet) {
             nextElement.increasePosition(increasedSize);
-        }
+        }}
 
     }
 
@@ -191,10 +204,21 @@ public class Equation {
 
     }
 
-    public void addBranches() {
-        
 
+    private boolean checkNearIsBranch()
+    {
+        for (ElementOfEquation element :
+                equationTreeSet) {
+            if (element.getPosition() <= cursorPosition) {
+                if (cursorPosition - element.getPosition() == 1)
+                    return true;
+                if (cursorPosition == element.getPosition())
+                    return true;
+            } else
 
+                return false;
+        }
+        return false;
     }
 
     private void addBranchesArroundNumberWithMinus(Numbers number)
@@ -203,9 +227,11 @@ public class Equation {
         Editable text=equation.getText();
         if(number.isMinus())
         {
+
         text.insert(number.getPosition(),"(");
-        number.increasePosition(1);
-        Branch openingBranch=new Branch(number.getPosition()-1,true);
+            Branch openingBranch=new Branch(number.getPosition(),true);
+       closestNumber.increasePosition(1);
+       increasePosition(closestNumber,1,false);
         equationTreeSet.add(openingBranch);
             cursorPosition=cursorPosition+2;
         }
@@ -220,26 +246,22 @@ public class Equation {
 
 
     public void changeSign() {
-
-
-        int increasingSize=-1;
-        Log.d(TAG, "changeSign: position"+closestNumber.getPosition());
         if (closestNumber!=null)
         if(closestNumber.getNumberOfDigits()!=0) {
             if (!closestNumber.isMinus()) {
                 equation.getText().insert(closestNumber.getPosition(), "-");
 
-                increasingSize =2;
+
             } else {
 
                 equation.getText().delete(closestNumber.getPosition(), closestNumber.getPosition()+1);
 
-                increasingSize = -2;
+
             }
             closestNumber.setMinus(!closestNumber.isMinus());
             addBranchesArroundNumberWithMinus(closestNumber);
             Log.d(TAG, "changeSign: " + closestNumber.toDocumentationString());
-            increasePosition(closestNumber, increasingSize,false);
+
             Log.d(TAG, "changeSign: " + closestNumber.toDocumentationString());
         }
         printOutNumbers();
