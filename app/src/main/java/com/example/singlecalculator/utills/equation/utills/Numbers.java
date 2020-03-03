@@ -1,66 +1,56 @@
 package com.example.singlecalculator.utills.equation.utills;
 
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.singlecalculator.utills.equation.exceptions.NumbersToBigForUniting;
-import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-
 public class Numbers extends ElementOfEquation {
     private static final String TAG = "Numbers";
+    private static final int NAXIMUM_NUMBER_SIZE=15;
+    private boolean isMinus=false;
+    private int dotPosition;
+    private boolean hasDot=false;
+    private int numberOfDigits=0;
+
+
+
+
     public Numbers(int position) {
         super(position,TypeOfElement.Number);
     }
-    private Numbers(int position,ArrayList<Character> arrayOfDiggets){
-        super(position,TypeOfElement.Number);
-        this.arrayOfDiggits=arrayOfDiggets;
+    public int getNumberOfDigits() {
+        return numberOfDigits;
     }
-    private ArrayList<Character> arrayOfDiggits=new ArrayList<>(15);
-    private boolean hasDot=false;
 
-    private boolean isMinus=false;
-    private int dotPosition;
+    public void setNumberOfDigits(int numberOfDigits) {
+        this.numberOfDigits = numberOfDigits;
+    }
 
-    public boolean insertNewDiggits(char newDgt,int insertPosition)
+    public boolean increaseNumberOfDigits(int increasingSize)
     {
-        Log.d(TAG, "insertNewDiggits: firstPositionOfNumber"+position);
-        Log.d(TAG, "insertNewDiggits: cursorPosition"+insertPosition);
-        if(arrayOfDiggits.size()<15)
-        {
-            arrayOfDiggits.add(insertPosition-position,newDgt);
-            return true;
-
-        }
-        else return false;
+    if(numberOfDigits<=NAXIMUM_NUMBER_SIZE||increasingSize<0)
+    {
+        numberOfDigits=numberOfDigits+increasingSize;
+        return true;
+    }
+    return false;
     }
 
     @NonNull
     @Override
     public String toString() {
         StringBuilder sb=new StringBuilder();
-        String minus="";
-        minus=isMinus?"-":"";
-        sb.append(minus);
-
-        for (Character diggit :
-                arrayOfDiggits) {
-            sb.append(diggit);
-        }
-        if(hasDot)
-            sb.insert(dotPosition,".");
+        sb.append("startPosition");
+        sb.append(this.position);
+        sb.append("endPosition");
+        sb.append(this.getLastPosition());
             return sb.toString();
     }
 
     public int getLastPosition()
     {
-        int minusSize=isMinus?1:0;
-        int dotSize=hasDot?1:0;
-        int sizrOfDiggits=arrayOfDiggits.size()==0?0:arrayOfDiggits.size()-1;
-        return position+sizrOfDiggits+minusSize+dotSize;
+
+
+        return position+getNumberOfFields();
     }
 
     public boolean isHasDot() {
@@ -77,6 +67,10 @@ public class Numbers extends ElementOfEquation {
 
     public void setMinus(boolean minus) {
         isMinus = minus;
+        if(isMinus)
+            dotPosition++;
+        else
+            dotPosition--;
     }
 
     public int getDotPosition() {
@@ -88,43 +82,40 @@ public class Numbers extends ElementOfEquation {
     }
 
 
-    @Override
-    public String toDocumentationString() {
-        return new StringBuilder().append("number").append(" ").append(position).append(" ").append(getLastPosition()).append("\n").toString();
-    }
-    public int getSize()
+
+
+    public int getNumberOfFields()
     {
-       return arrayOfDiggits.size();
+        int minusSize=isMinus?1:0;
+        int dotSize=hasDot?1:0;
+        return minusSize+dotSize+getNumberOfDigits();
     }
+
 
     public Numbers separateNumber(int cursorPosition) {
-        ArrayList<Character> newNumberDiggits=new ArrayList<>();
-        Log.d(TAG, "separateNumber: "+arrayOfDiggits);
-        Log.d(TAG, "separateNumber: "+(cursorPosition-position));
-        for(int i=cursorPosition-position;i<arrayOfDiggits.size();i++)
-        {
-            Log.d(TAG, "separateNumber: "+i+" "+arrayOfDiggits.get(i));
-            newNumberDiggits.add(arrayOfDiggits.get(i));
+       Numbers newNumber=new Numbers(cursorPosition);
+       int numberOfFieldsInFirstNumber=cursorPosition-this.position;
+       if(this.isMinus())
+           numberOfFieldsInFirstNumber=numberOfFieldsInFirstNumber--;
+       if(this.isHasDot())
+       {
+           if(this.position+dotPosition>=cursorPosition)
+           {
+               newNumber.setHasDot(true);
+               newNumber.setDotPosition(this.position+dotPosition-cursorPosition);
+               this.setHasDot(false);
+           }
+           else
+           {
+               numberOfFieldsInFirstNumber=numberOfFieldsInFirstNumber--;
+           }
+       }
+       newNumber.setNumberOfDigits(this.getNumberOfDigits()-numberOfFieldsInFirstNumber);
+       this.setNumberOfDigits(numberOfFieldsInFirstNumber);
 
-        }
-        arrayOfDiggits.removeAll(newNumberDiggits);
-        return new Numbers(cursorPosition,newNumberDiggits);
+        return newNumber;
     }
-    public Numbers uniteNumber(Numbers numbers) throws NumbersToBigForUniting
-    {
-        if(this.arrayOfDiggits.size()+numbers.arrayOfDiggits.size()>15)
-            throw new NumbersToBigForUniting(this,numbers);
-        else
-        {
 
-            for (Character character :
-                this.arrayOfDiggits) {
-                numbers.arrayOfDiggits.add(character);
-            }
-            this.arrayOfDiggits.clear();
-        }
-        return numbers;
-    }
 
     public boolean addDot(int cursorPosition) {
         if(!hasDot)
