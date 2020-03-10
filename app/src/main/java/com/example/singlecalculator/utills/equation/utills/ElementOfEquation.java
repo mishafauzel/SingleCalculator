@@ -1,6 +1,8 @@
 package com.example.singlecalculator.utills.equation.utills;
 
-public class ElementOfEquation implements Comparable<ElementOfEquation> {
+public abstract class ElementOfEquation implements Comparable<ElementOfEquation> {
+    int position;
+    TypeOfElement type;
     public int getPosition() {
         return position;
     }
@@ -17,8 +19,7 @@ public class ElementOfEquation implements Comparable<ElementOfEquation> {
         this.type = type;
     }
 
-    int position;
-    TypeOfElement type;
+
     public ElementOfEquation(int position,TypeOfElement typeOfElement) {
         this.position = position;
         this.type=typeOfElement;
@@ -27,6 +28,8 @@ public class ElementOfEquation implements Comparable<ElementOfEquation> {
     {
         position=position+increasingSize;
     }
+    public abstract int getLastPosition();
+
     @Override
     public int compareTo(ElementOfEquation elementOfEquation) {
 

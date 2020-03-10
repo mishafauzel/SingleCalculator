@@ -26,6 +26,10 @@ public class Branch extends ElementOfEquation {
     }
 
 
+    @Override
+    public int getLastPosition() {
+        return position+1;
+    }
 
     @Override
     public String toDocumentationString() {

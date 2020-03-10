@@ -49,6 +49,11 @@ public class Action extends ElementOfEquation {
      }
 
     @Override
+    public int getLastPosition() {
+        return position+1;
+    }
+
+    @Override
     public String toDocumentationString() {
         return new StringBuilder().append("action").append(" ").append(position).append(" ").append(typeOfActionToString(this.typeOfAction)).append("\n").toString();
     }

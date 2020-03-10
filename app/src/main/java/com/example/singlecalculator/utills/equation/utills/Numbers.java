@@ -45,12 +45,13 @@ public class Numbers extends ElementOfEquation {
         sb.append(this.getLastPosition());
             return sb.toString();
     }
-
+    @Override
     public int getLastPosition()
     {
+        int sizeOfDot=hasDot?1:0;
+        int minusSize=isMinus?1:0;
 
-
-        return position+getNumberOfFields();
+        return position+getNumberOfFields()+sizeOfDot+minusSize;
     }
 
     public boolean isHasDot() {
