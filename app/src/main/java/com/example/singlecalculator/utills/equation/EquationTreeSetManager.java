@@ -37,4 +37,8 @@ public class EquationTreeSetManager {
             element.increasePosition(increasinSize);
         }
     }
+    public void clearAll()
+    {
+        equationTreeSet.clear();
+    }
 }

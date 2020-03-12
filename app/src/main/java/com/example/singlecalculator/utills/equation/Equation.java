@@ -2,28 +2,21 @@ package com.example.singlecalculator.utills.equation;
 
 
 import android.os.Build;
-import android.service.autofill.AutofillService;
-import android.text.Editable;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.singlecalculator.R;
 import com.example.singlecalculator.utills.ButtonsTag;
+import com.example.singlecalculator.utills.equation.cursorposition.CalculateInterface;
 import com.example.singlecalculator.utills.equation.cursorposition.CursorStateController;
-import com.example.singlecalculator.utills.equation.utills.Action;
-import com.example.singlecalculator.utills.equation.utills.Branch;
+import com.example.singlecalculator.utills.equation.insertingvalues.InsertingValues;
 import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
-import com.example.singlecalculator.utills.equation.utills.Numbers;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-public class Equation {
+public class Equation  {
     private static final String TAG = "Equation";
     private EditText userInput;
-    private EquationTreeSetManager equationTreeSetManager=new EquationTreeSetManager();
+    private EquationTreeSetManager treeSetManager=new EquationTreeSetManager();
     private CursorStateController cursorStateController=new CursorStateController();
 
 
@@ -32,6 +25,10 @@ public class Equation {
         @Override
         public void onClick(View view) {
             int position=userInput.getSelectionStart();
+            cursorStateController.setCursorPosition(position);
+            ElementOfEquation[] nearestElements=treeSetManager.findNearestElements(position);
+            cursorStateController.defineCurrentState(nearestElements);
+
 
         }
     };
@@ -58,10 +55,74 @@ public class Equation {
 
 
 
+    public boolean addAction(ButtonsTag tag) {
+
+         return false;
+    }
+
+
+    public boolean addDigits(ButtonsTag tag) {
+
+        return false;
+    }
+
+
+    public InsertingValues addBranches() {
+        InsertingValues insertingValues;
+        if((insertingValues=cursorStateController.addBranches())!=null)
+        {
+            insertToUserInputInsertingValues(insertingValues);
+        }
+        return null;
+    }
+
+
+    public InsertingValues changeSign() {
+        InsertingValues insertingValues;
+        if((insertingValues=cursorStateController.changeSign())!=null)
+        {
+            insertToUserInputInsertingValues(insertingValues);
+        }
+        return null;
+    }
 
 
 
+    public void calculateTreeSet() {
+
+    }
+
+
+    public InsertingValues addDot() {
+        InsertingValues insertingValues;
+        if((insertingValues=cursorStateController.addDot())!=null)
+        {
+            insertToUserInputInsertingValues(insertingValues);
+        }
+        return null;
+    }
 
 
 
+    public void clearAll() {
+        cursorStateController.clearAll();
+        clearUserInput();
+    }
+
+
+    public boolean executePercentCalculation() {
+        return false;
+    }
+    private void insertToUserInput(char addingChar,int position)
+    {
+        userInput.getText().insert(position,String.valueOf(addingChar));
+    }
+    private void insertToUserInputInsertingValues(InsertingValues insertingValues)
+    {
+
+    }
+    private void clearUserInput()
+    {
+        userInput.getText().clear();
+    }
 }
