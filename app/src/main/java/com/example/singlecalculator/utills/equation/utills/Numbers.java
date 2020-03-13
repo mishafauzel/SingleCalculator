@@ -10,10 +10,6 @@ public class Numbers extends ElementOfEquation {
     private int dotPosition;
     private boolean hasDot=false;
     private int numberOfDigits=0;
-
-
-
-
     public Numbers(int position) {
         super(position,TypeOfElement.Number);
     }

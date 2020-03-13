@@ -13,6 +13,7 @@ public interface CalculateInterface {
      void calculateTreeSet();
      InsertingValues addDot();
      void clearAll();
-     boolean executePercentCalculation();
+     InsertingValues delete();
+     InsertingValues executePercentCalculation();
 
 }

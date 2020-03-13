@@ -62,6 +62,8 @@ public class Equation  {
 
 
     public boolean addDigits(ButtonsTag tag) {
+        InsertingValues insertingValues;
+
 
         return false;
     }
