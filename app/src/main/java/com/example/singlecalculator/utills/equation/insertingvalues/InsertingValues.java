@@ -4,74 +4,100 @@ import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class InsertingValues {
-    public final boolean newInsertion;
+    public final boolean hasNewInsertions;
+    public final boolean newInsertionInString;
     public final String insertingString;
     public final int insertingPosition;
+    public final boolean newInsertionInTreeSet;
     public final ElementOfEquation[] element;
     public final StateOfInsertingValues state;
+    public boolean hasError;
+
     public enum StateOfInsertingValues{INSERTING,DELETING}
 
-    public InsertingValues(boolean newInsertion, String insertingString, int insertingPosition, ElementOfEquation[] element,StateOfInsertingValues state) {
-        this.newInsertion = newInsertion;
+    public InsertingValues(boolean hasNewInsertions, boolean newInsertionInString, String insertingString, int insertingPosition, boolean newInsertionInTreeSet, ElementOfEquation[] element, StateOfInsertingValues state) {
+        this.hasNewInsertions = hasNewInsertions;
+        this.newInsertionInString = newInsertionInString;
         this.insertingString = insertingString;
         this.insertingPosition = insertingPosition;
+        this.newInsertionInTreeSet = newInsertionInTreeSet;
         this.element = element;
         this.state=state;
     }
     public static class Builder
     {
-        private boolean newInsertion;
+        private boolean hasNewInsertion=false;
+        private boolean hasNewInsertionInString=false;
         private String insertingString;
         private int insertingPosition;
-        private ArrayList<ElementOfEquation> element;
+        private boolean hasNewInsertionInTreeSet=false;
+        private ArrayList<ElementOfEquation> elements;
         private StateOfInsertingValues state;
 
-        public Builder(boolean newInsertion) {
-            this.newInsertion = newInsertion;
-            if(newInsertion)
-            {
-                element=new ArrayList<>();
-            }
+
+        public Builder() {
         }
 
-        public InsertingValues.Builder newInsertion(boolean hasNewInsertion)
-        {
-            this.newInsertion=newInsertion;
-            return this;
-        }
-        public InsertingValues.Builder setState(StateOfInsertingValues state)
-        {
+        public Builder(boolean newInsertionInString, boolean newInsertionInTreeSet, StateOfInsertingValues state) {
+            this.hasNewInsertion = true;
+            this.hasNewInsertionInString = newInsertionInString;
+            this.hasNewInsertionInTreeSet = newInsertionInTreeSet;
+            if(newInsertionInTreeSet)
+            {
+                elements =new ArrayList<>();
+            }
             this.state=state;
-            return this;
         }
-        public InsertingValues.Builder insertingString(String insertingString)
+        private InsertingValues.Builder setInsertingString(String insertingString)
         {
             this.insertingString=insertingString;
             return this;
         }
-        public InsertingValues.Builder insertingPosition(int insertingPosition)
+
+        private InsertingValues.Builder setInsertingPosition(int insertingPosition)
         {
             this.insertingPosition=insertingPosition;
             return this;
         }
-        public InsertingValues.Builder addNewInsertingElement(ElementOfEquation element)
+
+        private InsertingValues.Builder addNewInsertingElement(ElementOfEquation... elements)
         {
-            this.element.add(element);
+            this.elements.addAll(Arrays.asList(elements));
             return this;
         }
-        public InsertingValues.Builder deleteLastInsertingElement()
+
+        private InsertingValues.Builder deleteLastInsertingElement()
         {
-            if(this.element.size()!=0)
+            if(this.elements.size()!=0)
             {
-                this.element.remove(element.size()-1);
+                this.elements.remove(elements.size()-1);
             }
             return this;
         }
+
+        public InsertingValues.Builder setInsertingValues(String insertinStrValue,int insertingPosition,ElementOfEquation... elementsOfEquation)
+        {
+            if(hasNewInsertion)
+            {
+                if(hasNewInsertionInString)
+                {
+                    setInsertingString(insertinStrValue);
+                    setInsertingPosition(insertingPosition);
+                }
+                if(hasNewInsertionInTreeSet)
+                {addNewInsertingElement(elementsOfEquation);}
+            }
+            return this;
+
+        }
+
         public InsertingValues build()
         {
-            return new InsertingValues(this.newInsertion,this.insertingString,this.insertingPosition,this.element.toArray(new ElementOfEquation[this.element.size()]),state);
+            ElementOfEquation[] addingElements=this.elements ==null?null:new ElementOfEquation[this.elements.size()-1];
+            return new InsertingValues(this.hasNewInsertion, this.hasNewInsertionInString,this.insertingString,this.insertingPosition, this.hasNewInsertionInTreeSet, addingElements,state);
         }
 
     }

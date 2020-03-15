@@ -55,37 +55,32 @@ public class Equation  {
 
 
 
-    public boolean addAction(ButtonsTag tag) {
-
-         return false;
+    public void addAction(ButtonsTag tag) {
+        InsertingValues insertingValues=cursorStateController.addAction(tag);
+        executeInsertingValues(insertingValues);
     }
 
 
-    public boolean addDigits(ButtonsTag tag) {
-        InsertingValues insertingValues;
+    public void addDigits(ButtonsTag tag) {
+        InsertingValues insertingValues=cursorStateController.addDigits(tag);
+        executeInsertingValues(insertingValues);
 
 
-        return false;
+
     }
 
 
-    public InsertingValues addBranches() {
-        InsertingValues insertingValues;
-        if((insertingValues=cursorStateController.addBranches())!=null)
-        {
-            insertToUserInputInsertingValues(insertingValues);
-        }
-        return null;
+    public void addBranches() {
+        InsertingValues insertingValues=cursorStateController.addBranches();
+        executeInsertingValues(insertingValues);
+
     }
 
 
-    public InsertingValues changeSign() {
-        InsertingValues insertingValues;
-        if((insertingValues=cursorStateController.changeSign())!=null)
-        {
-            insertToUserInputInsertingValues(insertingValues);
-        }
-        return null;
+    public void changeSign() {
+        InsertingValues insertingValues=cursorStateController.changeSign();
+        executeInsertingValues(insertingValues);
+
     }
 
 
@@ -95,13 +90,9 @@ public class Equation  {
     }
 
 
-    public InsertingValues addDot() {
-        InsertingValues insertingValues;
-        if((insertingValues=cursorStateController.addDot())!=null)
-        {
-            insertToUserInputInsertingValues(insertingValues);
-        }
-        return null;
+    public void addDot() {
+        InsertingValues insertingValues=cursorStateController.addDot();
+        executeInsertingValues(insertingValues);
     }
 
 
@@ -112,13 +103,11 @@ public class Equation  {
     }
 
 
-    public boolean executePercentCalculation() {
-        return false;
+    public void executePercentCalculation() {
+        InsertingValues insertingValues=cursorStateController.executePercentCalculation();
+        executeInsertingValues(insertingValues);
     }
-    private void insertToUserInput(char addingChar,int position)
-    {
-        userInput.getText().insert(position,String.valueOf(addingChar));
-    }
+
     private void insertToUserInputInsertingValues(InsertingValues insertingValues)
     {
 
@@ -127,4 +116,9 @@ public class Equation  {
     {
         userInput.getText().clear();
     }
+    private void executeInsertingValues(InsertingValues insertingValues)
+    {
+        
+    }
+
 }

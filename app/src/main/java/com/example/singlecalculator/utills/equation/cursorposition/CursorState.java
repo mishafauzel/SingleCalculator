@@ -15,11 +15,23 @@ public abstract class CursorState {
     public static ElementOfEquation[] getClosestElements() {
         return closestElements;
     }
-    protected static Branch getLa
+    protected static Branch getLastUnclosedBranch(int cursorPosition)
+    {
+        return null;
+    }
 
-    public static void setClosestElements(ElementOfEquation... elements) {
+    protected static void setClosestElements(ElementOfEquation... elements) {
       closestElements[0]=elements.length==0?null:elements[0];
       closestElements[1]=elements.length==2?elements[1]:null;
+    }
+    protected ElementOfEquation getNumberFromClosestElements()
+    {
+        for (ElementOfEquation number :
+                closestElements) {
+            if (number.getType() == ElementOfEquation.TypeOfElement.Number)
+                return number;
+        }
+        return null;
     }
     public static boolean hasUnclosedBranches()
     {

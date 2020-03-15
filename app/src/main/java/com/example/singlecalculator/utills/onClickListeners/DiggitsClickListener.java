@@ -9,11 +9,9 @@ import com.example.singlecalculator.utills.calculations.Calculator;
 
 public class DiggitsClickListener implements View.OnClickListener {
     private static final String TAG = "DiggitsClickListener";
-    private Calculator calculator;
+
     private Equation equation;
-    public DiggitsClickListener(Calculator calculator) {
-        this.calculator=calculator;
-    }
+
     public void setEquation(Equation equation) {
         this.equation = equation;
     }

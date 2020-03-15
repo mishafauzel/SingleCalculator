@@ -2,6 +2,7 @@ package com.example.singlecalculator.utills.equation.cursorposition;
 
 import com.example.singlecalculator.utills.ButtonsTag;
 import com.example.singlecalculator.utills.equation.EquationTreeSetManager;
+import com.example.singlecalculator.utills.equation.exceptions.NumbersToBigForUniting;
 import com.example.singlecalculator.utills.equation.insertingvalues.InsertingValues;
 import com.example.singlecalculator.utills.equation.utills.Action;
 import com.example.singlecalculator.utills.equation.utills.Branch;
@@ -37,12 +38,12 @@ public class CursorStateController extends CursorState implements CalculateInter
 
     @Override
     public InsertingValues addBranches() {
-        return null;
+        return currentState.addBranches();
     }
 
     @Override
     public InsertingValues changeSign() {
-        return null;
+        return currentState.changeSign();
     }
 
 
@@ -53,7 +54,7 @@ public class CursorStateController extends CursorState implements CalculateInter
 
     @Override
     public InsertingValues addDot() {
-        return null;
+        return currentState.addDot();
     }
 
 
@@ -64,12 +65,12 @@ public class CursorStateController extends CursorState implements CalculateInter
 
     @Override
     public InsertingValues delete() {
-        return null;
+        return currentState.delete();
     }
 
     @Override
     public InsertingValues executePercentCalculation() {
-        return null;
+        return currentState.executePercentCalculation();
     }
 
     public void defineCurrentState(ElementOfEquation[]nearestElements)
@@ -118,12 +119,18 @@ public class CursorStateController extends CursorState implements CalculateInter
     public class CursorBetweenNumberAndAction extends CursorState implements CalculateInterface {
         @Override
         public InsertingValues addAction(ButtonsTag tag) {
-            return null;
+             return new InsertingValues.Builder().build();
         }
 
         @Override
-        public InsertingValues addDigits(ButtonsTag tag) {
-            return null;
+        public InsertingValues addDigits(ButtonsTag tag)  {
+            Numbers number=(Numbers)getNumberFromClosestElements();
+            if(number.increaseNumberOfDigits(1))
+            {
+                increaseCursorPosition(1);
+                return createInsertingValuesBuilder(true,true,false, InsertingValues.StateOfInsertingValues.INSERTING,String.valueOf(tag),cursorPosition,null).build();
+            }
+            else{ return new InsertingValues.Builder().build();}
         }
 
         @Override
@@ -298,20 +305,18 @@ public class CursorStateController extends CursorState implements CalculateInter
     public class UserInputIsEmpty extends CursorState implements CalculateInterface {
         @Override
         public InsertingValues addAction(ButtonsTag tag) {
-            return new InsertingValues.Builder(false).build();
+            return new InsertingValues.Builder().build();
         }
 
         @Override
         public InsertingValues addDigits(ButtonsTag tag)
         {
-            Numbers newNumber=new Numbers(cursorPosition);
-            newNumber.setNumberOfDigits(1);
-            InsertingValues.Builder builder=new InsertingValues.Builder(true).setState(InsertingValues.StateOfInsertingValues.INSERTING)
-            .insertingPosition(0)
-            .addNewInsertingElement(newNumber)
-            .insertingString(String.valueOf(tag.getText()));
+            Numbers newElement=new Numbers(cursorPosition);
+            newElement.setNumberOfDigits(1);
+            InsertingValues.Builder builder=createInsertingValuesBuilder(true,true,true, InsertingValues.StateOfInsertingValues.INSERTING,
+                    String.valueOf(tag),cursorPosition,newElement);
             CursorStateController.this.setCursorWithinNumberState();
-            CursorStateController.setClosestElements(newNumber);
+            CursorStateController.setClosestElements(newElement);
             CursorStateController.this.increaseCursorPosition(1);
             return builder.build();
 
@@ -321,23 +326,25 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public InsertingValues addBranches() {
-            Branch newBranch=new Branch(cursorPosition);
-            newBranch.setOpening(true);
-            newBranch.setClosed(false);
-            branches.add(newBranch);
-            InsertingValues.Builder builder=new InsertingValues.Builder(true)
-            .insertingPosition(0).setState(InsertingValues.StateOfInsertingValues.INSERTING)
-                    .addNewInsertingElement(newBranch)
-                    .insertingString("(");
-            CursorStateController.setClosestElements(newBranch);
-            CursorStateController.this.increaseCursorPosition(1);
+            Branch newElement=new Branch(cursorPosition);
+            newElement.setOpening(true);
+            newElement.setClosed(false);
+            branches.add(newElement);
+
+            InsertingValues.Builder builder=createInsertingValuesBuilder(true,true,true, InsertingValues.StateOfInsertingValues.INSERTING,
+                    "(",cursorPosition,newElement);
             CursorStateController.this.setCursorNearBranchesState();
+            CursorStateController.setClosestElements(newElement);
+            CursorStateController.this.increaseCursorPosition(1);
             return builder.build();
+
+
+
         }
 
         @Override
         public InsertingValues changeSign() {
-            return new InsertingValues.Builder(false).build();
+            return new InsertingValues.Builder().build();
         }
 
 
@@ -348,7 +355,7 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public InsertingValues addDot() {
-            return new InsertingValues.Builder(false).build();
+            return new InsertingValues.Builder().build();
         }
 
 
@@ -359,14 +366,23 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public InsertingValues delete() {
-            return new InsertingValues.Builder(false).build();
+            return new InsertingValues.Builder().build();
         }
 
         @Override
         public InsertingValues executePercentCalculation() {
-            return new InsertingValues.Builder(false).build();
+            return new InsertingValues.Builder().build();
         }
     }
+    private InsertingValues.Builder createInsertingValuesBuilder(boolean hasNewInsertion, boolean hasNewStringInsertion, boolean newInsertingTreeSet, InsertingValues.StateOfInsertingValues stateOfInserting,String insertingString,int insertingPosition,ElementOfEquation... elementOfEquation)
+    {
+        if(hasNewInsertion) {
+            InsertingValues.Builder builder = new InsertingValues.Builder(hasNewStringInsertion, newInsertingTreeSet, stateOfInserting);
+            builder.setInsertingValues(insertingString,insertingPosition,elementOfEquation);
+            return builder;
+        }
+        else  return new InsertingValues.Builder();
+        }
 
 
 
