@@ -4,14 +4,20 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.singlecalculator.utills.ButtonsTag;
+import com.example.singlecalculator.utills.FirstPanelStrategy;
 import com.example.singlecalculator.utills.equation.Equation;
 import com.example.singlecalculator.utills.calculations.Calculator;
+import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
 
 public class DiggitsClickListener implements View.OnClickListener {
     private static final String TAG = "DiggitsClickListener";
 
     private Equation equation;
-
+    private FirstPanelStrategy strategy;
+    public void setStrategy(FirstPanelStrategy strategy)
+    {
+        this.strategy=strategy;
+    }
     public void setEquation(Equation equation) {
         this.equation = equation;
     }
@@ -23,29 +29,63 @@ public class DiggitsClickListener implements View.OnClickListener {
         ButtonsTag tag=((ButtonsTag)view.getTag());
         switch ( tag.buttonType)
         {
-            case digit:
-                equation.addDigits(tag);
+            case digit: {
+                try {
+                    equation.addDigits(tag);
+                } catch (UserInputException ex) {
+                    ex.printStackTrace();
+                    strategy.handleUserInputException(ex);
+                }
                 break;
-            case action:
-                equation.addAction(tag);
+            }
+            case action: {
+                try {
+                    equation.addAction(tag);
+                }
+                catch (UserInputException ex)
+                {
+                    ex.printStackTrace();
+                    strategy.handleUserInputException(ex);
+                }
                 break;
+            }
             case delete:
                 equation.clearAll();
                 break;
             case equals:
-                calculator.calculate(equation);
+               equation.calculateTreeSet();
                 break;
             case percent:
-                equation.executePercentCalculation();
+                try {
+                    equation.executePercentCalculation();
+                } catch (UserInputException e) {
+                    e.printStackTrace();
+                    strategy.handleUserInputException(e);
+                }
                 break;
             case branches:
-                equation.addBranches();
+                try {
+                    equation.addBranches();
+                } catch (UserInputException e) {
+                    e.printStackTrace();
+                    strategy.handleUserInputException(e);
+                }
                 break;
             case chengeSign:
-                equation.changeSign();
+                try {
+                    equation.changeSign();
+                } catch (UserInputException e) {
+                    e.printStackTrace();
+                    strategy.handleUserInputException(e);
+                }
                 break;
             case dot:
-                equation.addDot();
+                try {
+                    equation.addDot();
+                } catch (UserInputException e) {
+                    e.printStackTrace();
+                    strategy.handleUserInputException(e);
+                }
                 break;
 
         }

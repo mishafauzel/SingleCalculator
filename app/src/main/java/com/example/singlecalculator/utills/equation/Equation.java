@@ -4,13 +4,11 @@ package com.example.singlecalculator.utills.equation;
 import android.os.Build;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.example.singlecalculator.R;
 import com.example.singlecalculator.utills.ButtonsTag;
-import com.example.singlecalculator.utills.equation.cursorposition.CalculateInterface;
 import com.example.singlecalculator.utills.equation.cursorposition.CursorStateController;
-import com.example.singlecalculator.utills.equation.insertingvalues.InsertingValues;
+import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
+import com.example.singlecalculator.utills.equation.actions.ActionsResult;
 import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 
 public class Equation  {
@@ -55,14 +53,14 @@ public class Equation  {
 
 
 
-    public void addAction(ButtonsTag tag) {
-        InsertingValues insertingValues=cursorStateController.addAction(tag);
+    public void addAction(ButtonsTag tag) throws UserInputException {
+        ActionsResult insertingValues=cursorStateController.addAction(tag);
         executeInsertingValues(insertingValues);
     }
 
 
-    public void addDigits(ButtonsTag tag) {
-        InsertingValues insertingValues=cursorStateController.addDigits(tag);
+    public void addDigits(ButtonsTag tag) throws UserInputException{
+        ActionsResult insertingValues=cursorStateController.addDigits(tag);
         executeInsertingValues(insertingValues);
 
 
@@ -70,15 +68,15 @@ public class Equation  {
     }
 
 
-    public void addBranches() {
-        InsertingValues insertingValues=cursorStateController.addBranches();
+    public void addBranches() throws UserInputException{
+        ActionsResult insertingValues=cursorStateController.addBranches();
         executeInsertingValues(insertingValues);
 
     }
 
 
-    public void changeSign() {
-        InsertingValues insertingValues=cursorStateController.changeSign();
+    public void changeSign() throws UserInputException {
+        ActionsResult insertingValues=cursorStateController.changeSign();
         executeInsertingValues(insertingValues);
 
     }
@@ -90,8 +88,8 @@ public class Equation  {
     }
 
 
-    public void addDot() {
-        InsertingValues insertingValues=cursorStateController.addDot();
+    public void addDot() throws UserInputException {
+        ActionsResult insertingValues=cursorStateController.addDot();
         executeInsertingValues(insertingValues);
     }
 
@@ -103,12 +101,12 @@ public class Equation  {
     }
 
 
-    public void executePercentCalculation() {
-        InsertingValues insertingValues=cursorStateController.executePercentCalculation();
+    public void executePercentCalculation() throws UserInputException {
+        ActionsResult insertingValues=cursorStateController.executePercentCalculation();
         executeInsertingValues(insertingValues);
     }
 
-    private void insertToUserInputInsertingValues(InsertingValues insertingValues)
+    private void insertToUserInputInsertingValues(ActionsResult insertingValues)
     {
 
     }
@@ -116,7 +114,7 @@ public class Equation  {
     {
         userInput.getText().clear();
     }
-    private void executeInsertingValues(InsertingValues insertingValues)
+    private void executeInsertingValues(ActionsResult insertingValues) throws UserInputException
     {
         
     }

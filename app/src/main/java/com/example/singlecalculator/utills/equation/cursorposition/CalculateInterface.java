@@ -1,19 +1,17 @@
 package com.example.singlecalculator.utills.equation.cursorposition;
 
-import android.provider.ContactsContract;
-
 import com.example.singlecalculator.utills.ButtonsTag;
-import com.example.singlecalculator.utills.equation.insertingvalues.InsertingValues;
+import com.example.singlecalculator.utills.equation.actions.ActionsResult;
 
 public interface CalculateInterface {
-     InsertingValues addAction(ButtonsTag tag);
-     InsertingValues addDigits(ButtonsTag tag);
-     InsertingValues addBranches();
-     InsertingValues changeSign();
+     ActionsResult addAction(ButtonsTag tag);
+     ActionsResult addDigits(ButtonsTag tag);
+     ActionsResult addBranches();
+     ActionsResult changeSign();
      void calculateTreeSet();
-     InsertingValues addDot();
+     ActionsResult addDot();
      void clearAll();
-     InsertingValues delete();
-     InsertingValues executePercentCalculation();
+     ActionsResult delete();
+     ActionsResult executePercentCalculation();
 
 }

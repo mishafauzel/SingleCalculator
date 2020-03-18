@@ -5,11 +5,13 @@ import android.widget.TextView;
 import com.example.singlecalculator.R;
 import com.example.singlecalculator.utills.calculations.Calculator;
 import com.example.singlecalculator.utills.equation.Equation;
+import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
 import com.example.singlecalculator.utills.onClickListeners.DiggitsClickListener;
+import com.example.singlecalculator.utills.strategiesInterdaces.ExceptionHandlerForUserInput;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategiesInterface;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategyOwner;
 
-public class FirstPanelStrategy implements StrategiesInterface {
+public class FirstPanelStrategy implements StrategiesInterface, ExceptionHandlerForUserInput {
     private final int[] idsOfButtons=new int[]{
             R.id.delete_button, R.id.branches,R.id.equals, R.id.changeSign,R.id.percent,R.id.divide,
             R.id.multiply, R.id.minus,R.id.plus,R.id.dot
@@ -27,7 +29,7 @@ public class FirstPanelStrategy implements StrategiesInterface {
     private FirstPanelStrategy()
     {
         calculator=Calculator.getInstance();
-        onClicListener=new DiggitsClickListener(calculator);
+        onClicListener=new DiggitsClickListener();
         createButtonTypeArray();
     }
 
@@ -51,7 +53,7 @@ public class FirstPanelStrategy implements StrategiesInterface {
         buttons=owner.getButtons(idsOfButtons);
         if(onClicListener==null)
         {
-            onClicListener=new DiggitsClickListener(calculator);
+            onClicListener=new DiggitsClickListener();
         }
         onClicListener.setEquation(equation);
       for(int i = 0; i < buttons.length; i++)
@@ -75,5 +77,10 @@ public class FirstPanelStrategy implements StrategiesInterface {
         for(int i = 10; i < buttonTypes.length; i++)
             buttonTypes[i]= new ButtonsTag(ButtonsTag.ButtonType.digit);
 
+    }
+
+    @Override
+    public void handleUserInputException(UserInputException exception) {
+        owner.showErrorToast(exception);
     }
 }

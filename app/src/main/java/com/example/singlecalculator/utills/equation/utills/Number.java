@@ -3,14 +3,14 @@ package com.example.singlecalculator.utills.equation.utills;
 
 import androidx.annotation.NonNull;
 
-public class Numbers extends ElementOfEquation {
+public class Number extends ElementOfEquation {
     private static final String TAG = "Numbers";
     private static final int NAXIMUM_NUMBER_SIZE=15;
     private boolean isMinus=false;
     private int dotPosition;
     private boolean hasDot=false;
     private int numberOfDigits=0;
-    public Numbers(int position) {
+    public Number(int position) {
         super(position,TypeOfElement.Number);
     }
     public int getNumberOfDigits() {
@@ -89,8 +89,8 @@ public class Numbers extends ElementOfEquation {
     }
 
 
-    public Numbers separateNumber(int cursorPosition) {
-       Numbers newNumber=new Numbers(cursorPosition);
+    public Number separateNumber(int cursorPosition) {
+       Number newNumber=new Number(cursorPosition);
        int numberOfFieldsInFirstNumber=cursorPosition-this.position;
        if(this.isMinus())
            numberOfFieldsInFirstNumber=numberOfFieldsInFirstNumber--;
@@ -132,5 +132,9 @@ public class Numbers extends ElementOfEquation {
     public void deleteDot()
     {
 
+    }
+
+    public int defineCursorPositionRelativeToStartPosition(int cursorPosition) {
+        return getPosition()-cursorPosition;
     }
 }

@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">EngineerCalculator</string>
     <string name="text_size">"36sp"</string>
-    <string name="maxLength">Maximum length of number is 15</string>
+    <string name="max_length_of_number">Maximum length of number is 15</string>
+    <string name="arithmetic_in_first_place">Aritmetic symbpls must be after or within numbers</string>
+    <string name="merging_length_too_big">sum of two merging numbers\' lengths must be less then 15</string>
+    <string name="cant_add_action_now">Cant add action now</string>
+    <string name="cant_execute_action">"Can't execute action now "</string>
+    <string name="number_already_has_dot">This number already has dot</string>
 
     <string-array name="second_panel_first_state">
             <item>2nd</item>

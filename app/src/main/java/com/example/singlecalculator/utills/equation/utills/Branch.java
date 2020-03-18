@@ -49,7 +49,13 @@ public class Branch extends ElementOfEquation {
     }
 
     public void setPairBranch(Branch pairBranch) {
+
         this.pairBranch = pairBranch;
+        if(pairBranch!=null)
+        {
+            pairBranch.setPairBranch(this);
+        }
+        isClosed=pairBranch!=null;
     }
 
     public Branch(int position) {

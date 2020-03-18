@@ -2,6 +2,7 @@ package com.example.singlecalculator.utills.equation.cursorposition;
 
 import com.example.singlecalculator.utills.ButtonsTag;
 import com.example.singlecalculator.utills.equation.EquationTreeSetManager;
+import com.example.singlecalculator.utills.equation.utills.Action;
 import com.example.singlecalculator.utills.equation.utills.Branch;
 import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 
@@ -15,10 +16,46 @@ public abstract class CursorState {
     public static ElementOfEquation[] getClosestElements() {
         return closestElements;
     }
-    protected static Branch getLastUnclosedBranch(int cursorPosition)
+    protected  Branch getLastUnclosedBranch(int cursorPosition)
     {
-        return null;
+        Branch previousBranch=null;
+        for (Branch branch :
+                branches) {
+            if (branch.getPosition() < cursorPosition)
+            if(branch.isClosed())
+                previousBranch=branch;
+            if(branch.getPosition()>cursorPosition)
+                break;
+            }
+        return previousBranch;
     }
+    protected Branch  findSmallestPairOfBranchArrounCursor(int cursorPosition)
+    {
+
+
+        Branch closestClosedPair=null;
+        for (Branch branch :
+                branches) {
+            if (branch.isClosed())
+                if (branch.getPairBranch().getPosition() > cursorPosition) {
+                    closestClosedPair = branch;
+                }
+            if (branch.getPosition() > cursorPosition)
+                break;
+
+        }
+        return closestClosedPair;
+
+    }
+    protected void increaseNumberOfUnclosedBranch()
+    {
+        unclosedBranchNumber++;
+    }
+    protected void decreaseNumberOfUnclosedBranch()
+    {
+        unclosedBranchNumber--;
+    }
+
 
     protected static void setClosestElements(ElementOfEquation... elements) {
       closestElements[0]=elements.length==0?null:elements[0];
