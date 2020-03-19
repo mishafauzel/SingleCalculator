@@ -70,7 +70,7 @@ public class CursorStateController extends CursorState implements CalculateInter
     }
 
     @Override
-    public ActionsResult executePercentCalculation()  {
+    public ActionsResult[] executePercentCalculation()  {
         return currentState.executePercentCalculation();
     }
 
@@ -369,34 +369,88 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public ActionsResult delete() {
+            Number number=(Number)closestElements[0];
             return null;
         }
 
+        /**
+         * executing by moving dot position to left
+         * @return actions which will be executed to keep String and TreeSet representation of equation the same
+         */
         @Override
-        public ActionsResult executePercentCalculation() {
+        public ActionsResult[] executePercentCalculation() {
             Number number=(Number)closestElements[0];
+            /**
+             * if number has dot, just move it to left, and add digits if required
+             */
             if(number.isHasDot())
             {
-
+                /**
+                 * number has dot and has enough digits for moving
+                 */
+                if(number.getDotPosition()>2)
+                {
+                    number.moveDotPosition(2);
+                    int dotPosition;
+                    return new ActionsResult[]{ActionsResult.Builder.createMovingActionBuilder().setFromPosition(dotPosition=number.calculateDotPosRelativeToStartOfString()).
+                            setToPosition(dotPosition-2).build()};
+                }
+                /**
+                 * number has dot but has not enough digits for moving
+                 */
+                else
+                {
+                    int oldNumberOfDiggits=number.getNumberOfDigits();
+                    int numberOfAddingDigits=3-number.getDotPosition();
+                    /**
+                     * check that number will not exceed maximum size after inserting,return ActionResult with error if number exceed
+                     */
+                    if(!number.increaseNumberOfDigits(numberOfAddingDigits))
+                    {
+                     return new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getNumberToBigForInsertion()).build()};
+                    }
+                    /**
+                     * add digits to number
+                     */
+                    else
+                    {
+                        number.moveDotPosition(numberOfAddingDigits);
+                        int newDotPosition=number.calculateDotPosRelativeToStartOfString();
+                        StringBuilder addingInString=new StringBuilder();
+                        for(int i=0;i<numberOfAddingDigits;i++)
+                            addingInString.append("0");
+                        return new ActionsResult[]{ActionsResult.Builder.createInsertingBuilder().setString(addingInString.toString(),
+                                number.getPosition()).build(),ActionsResult.Builder.createMovingActionBuilder().setFromPosition(number.getDotPosition()).
+                        setToPosition(number.getDotPosition()-2).build()};
+                    }
+                }
             }
+            /**
+             * number doesn't have dot so add it, if number hasn't got enough digits,add some extra "0"
+             */
             else
             {
                 number.setHasDot(true);
                 if(number.getNumberOfDigits()>=3)
                 {
                     int positionOfInsertingDot=number.getLastPosition()-1;
-                    return ActionsResult.Builder.createInsertingBuilder().setString(".",positionOfInsertingDot).build();
+                    return new ActionsResult[]{ActionsResult.Builder.createInsertingBuilder().setString(".",positionOfInsertingDot).build()};
                 }
                 else
                 {
                     number.increaseNumberOfDigits(3-number.getNumberOfDigits());
-
+                    return new ActionsResult[2];
                 }
             }
-            return false;
+
         }
     }
     public class UserInputIsEmpty extends CursorState implements CalculateInterface {
+        /**
+         *
+         * @param tag
+         * @return
+         */
         @Override
         public ActionsResult addAction(ButtonsTag tag) {
             return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
@@ -463,8 +517,8 @@ public class CursorStateController extends CursorState implements CalculateInter
         }
 
         @Override
-        public ActionsResult executePercentCalculation() {
-            return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
+        public ActionsResult[] executePercentCalculation() {
+            return new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build()};
         }
     }
 

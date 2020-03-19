@@ -12,6 +12,6 @@ public interface CalculateInterface {
      ActionsResult addDot();
      void clearAll();
      ActionsResult delete();
-     ActionsResult executePercentCalculation();
+     ActionsResult[] executePercentCalculation();
 
 }

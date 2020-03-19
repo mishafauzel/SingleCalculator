@@ -137,4 +137,21 @@ public class Number extends ElementOfEquation {
     public int defineCursorPositionRelativeToStartPosition(int cursorPosition) {
         return getPosition()-cursorPosition;
     }
+
+    public void moveDotPosition(int i)
+    {
+        this.dotPosition=this.dotPosition+i;
+    }
+    public int defineFirstDigitPositionRelativeToStartOfString()
+    {
+        return getPosition()+getFirstDigitPosition();
+    }
+    public int getFirstDigitPosition()
+    {
+        return isMinus()?1:0;
+    }
+
+    public int calculateDotPosRelativeToStartOfString() {
+        return this.getPosition()+this.getDotPosition();
+    }
 }
