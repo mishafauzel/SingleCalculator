@@ -3,6 +3,11 @@ package com.example.singlecalculator.utills.equation.utills;
 
 import androidx.annotation.NonNull;
 
+/**
+ * Elements of equation represents number in edit text.
+ *Note:
+ *
+ */
 public class Number extends ElementOfEquation {
     private static final String TAG = "Numbers";
     private static final int NAXIMUM_NUMBER_SIZE=15;
@@ -10,9 +15,18 @@ public class Number extends ElementOfEquation {
     private int dotPosition;
     private boolean hasDot=false;
     private int numberOfDigits=0;
+
+    public boolean decreaseNumberOfDiggits(int sizeOfDecreasing) {
+        if(numberOfDigits>0)
+            numberOfDigits--;
+        return numberOfDigits!=0;
+    }
+
+    public enum PreviousSymbol {digit,dot,sign}
     public Number(int position) {
         super(position,TypeOfElement.Number);
     }
+
     public int getNumberOfDigits() {
         return numberOfDigits;
     }
@@ -137,6 +151,10 @@ public class Number extends ElementOfEquation {
     public int defineCursorPositionRelativeToStartPosition(int cursorPosition) {
         return getPosition()-cursorPosition;
     }
+    public int defineCursorPositionRelativeToFirstDigit(int cursorPosition)
+    {
+        return cursorPosition-defineFirstDigitPositionRelativeToStartOfString();
+    }
 
     public void moveDotPosition(int i)
     {
@@ -153,5 +171,16 @@ public class Number extends ElementOfEquation {
 
     public int calculateDotPosRelativeToStartOfString() {
         return this.getPosition()+this.getDotPosition();
+    }
+
+    public PreviousSymbol defineSymbolBeforeCursor(int cursorPosition) {
+        int positionRelativeToStart=defineCursorPositionRelativeToStartPosition(cursorPosition);
+        if(this.isHasDot() && positionRelativeToStart==getDotPosition()+1)
+        {
+            return PreviousSymbol.dot;
+        }
+        if(this.isMinus() && positionRelativeToStart==1)
+            return PreviousSymbol.sign;
+        return PreviousSymbol.digit;
     }
 }

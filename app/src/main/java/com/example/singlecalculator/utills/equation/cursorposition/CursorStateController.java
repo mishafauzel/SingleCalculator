@@ -1,6 +1,7 @@
 package com.example.singlecalculator.utills.equation.cursorposition;
 
 import com.example.singlecalculator.utills.ButtonsTag;
+import com.example.singlecalculator.utills.equation.actions.DeletingActions;
 import com.example.singlecalculator.utills.equation.actions.InsertingActions;
 import com.example.singlecalculator.utills.equation.exceptions.UserInputExceptionsFactory;
 import com.example.singlecalculator.utills.equation.actions.ActionsResult;
@@ -221,7 +222,7 @@ public class CursorStateController extends CursorState implements CalculateInter
         @Override
         public ActionsResult addAction(ButtonsTag tag) {
            Number oldNumber=(Number) closestElements[0];
-            if(oldNumber.getPosition()!=cursorPosition)
+            if(oldNumber.defineFirstDigitPositionRelativeToStartOfString()!=cursorPosition)
             {
                 Action newAction=new Action(cursorPosition,String.valueOf(tag.getText()));
                 Number newNumber=oldNumber.separateNumber(cursorPosition);
@@ -319,8 +320,19 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public ActionsResult changeSign() {
-            if(((Number)closestElements[0]).isMinus())
-            return null;
+            Number number=(Number)closestElements[0];
+            ActionsResult actionResult;
+            if(number.isMinus())
+            {
+                actionResult=ActionsResult.Builder.createDeletingActionBuilder().setFromPosition(number.getPosition()).
+                        setToPosition(number.defineFirstDigitPositionRelativeToStartOfString()).build();
+            }
+            else
+            {
+               actionResult=ActionsResult.Builder.createInsertingBuilder().setString("-",number.getPosition()).build();
+            }
+            number.setMinus(!number.isMinus());
+            return actionResult;
         }
 
 
@@ -338,7 +350,7 @@ public class CursorStateController extends CursorState implements CalculateInter
             else {
                 {
                     String insertionInEditText = ".";
-                    if (cursorPosition == number.getPosition()) {
+                    if (cursorPosition == number.getFirstDigitPosition()) {
                         if (!(number.increaseNumberOfDigits(1)))
                             return ActionsResult.Builder.createActionWithErrorBuilder()
                                     .setException(UserInputExceptionsFactory.getNumberToBigForInsertion()).build();
@@ -370,7 +382,38 @@ public class CursorStateController extends CursorState implements CalculateInter
         @Override
         public ActionsResult delete() {
             Number number=(Number)closestElements[0];
-            return null;
+            Number.PreviousSymbol previousSymbol=number.defineSymbolBeforeCursor(cursorPosition);
+            ActionsResult result;
+            switch (previousSymbol)
+            {
+                case sign:
+                {
+
+                    result=ActionsResult.Builder.createDeletingActionBuilder().setFromPosition(number.getPosition()).setToPosition(number.getFirstDigitPosition()).build();
+                    number.setMinus(false);
+                    break;
+                }
+                case digit:
+                {
+                   DeletingActions.DeletingActionsBuilder resultBuilder=ActionsResult.Builder.createDeletingActionBuilder().setFromPosition(cursorPosition-1).setToPosition(cursorPosition);
+                    boolean hasRemainingDigits=number.decreaseNumberOfDiggits(1);
+                    if(!hasRemainingDigits)
+                        resultBuilder.addDeletingElement(number);
+                    result=resultBuilder.build();
+                    break ;
+                }
+                case dot:
+                {
+                    result=ActionsResult.Builder.createDeletingActionBuilder().setFromPosition(number.getDotPosition()).
+                            setToPosition(number.getDotPosition()+1).build();
+                    number.setHasDot(false);
+                    number.setDotPosition(-1);
+                    break;
+                }
+
+            }
+            increaseCursorPosition(-1);
+            return result;
         }
 
         /**
