@@ -3,6 +3,7 @@ package com.example.singlecalculator.utills.equation.cursorposition;
 import com.example.singlecalculator.utills.ButtonsTag;
 import com.example.singlecalculator.utills.equation.actions.DeletingActions;
 import com.example.singlecalculator.utills.equation.actions.InsertingActions;
+import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
 import com.example.singlecalculator.utills.equation.exceptions.UserInputExceptionsFactory;
 import com.example.singlecalculator.utills.equation.actions.ActionsResult;
 import com.example.singlecalculator.utills.equation.utills.Action;
@@ -49,10 +50,7 @@ public class CursorStateController extends CursorState implements CalculateInter
     }
 
 
-    @Override
-    public void calculateTreeSet() {
 
-    }
 
     @Override
     public ActionsResult addDot()  {
@@ -60,10 +58,7 @@ public class CursorStateController extends CursorState implements CalculateInter
     }
 
 
-    @Override
-    public void clearAll() {
 
-    }
 
     @Override
     public ActionsResult delete() {
@@ -121,7 +116,7 @@ public class CursorStateController extends CursorState implements CalculateInter
     public class CursorBetweenNumberAndAction extends CursorState implements CalculateInterface {
         @Override
         public ActionsResult addAction(ButtonsTag tag) {
-             return new ActionsResult.Builder().build();
+             return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build());
         }
 
         @Override
@@ -129,36 +124,41 @@ public class CursorStateController extends CursorState implements CalculateInter
             Number number=(Number)getNumberFromClosestElements();
             if(number.increaseNumberOfDigits(1))
             {
+                ActionsResult result=ActionsResult.Builder.createInsertingBuilder().setString(String.valueOf(tag.getText()),cursorPosition).build();
+
                 increaseCursorPosition(1);
-                return createInsertingValuesBuilder(true,true,false, ActionsResult.StateOfInsertingValues.INSERTING,String.valueOf(tag),cursorPosition,null).build();
+                if(closestElements[1].getType()== ElementOfEquation.TypeOfElement.Number)
+                    setCursorWithinNumberState();
+                return result;
             }
-            else{ return new ActionsResult.Builder().build();}
+            else{ return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getNumberToBigForInsertion()).build()}
         }
 
         @Override
         public ActionsResult addBranches() {
+            Branch branch=new Branch(cursorPosition);
+            if(closestElements[0].getType()== ElementOfEquation.TypeOfElement.Action)
+                branch.setOpening(true);
+            else
+                Branch openingBranh=getLastUnclosedBranch(cursorPosition);
             return null;
         }
 
         @Override
         public ActionsResult changeSign() {
+            Number number=(Number)getNumberFromClosestElements();
+
             return null;
         }
 
-        @Override
-        public void calculateTreeSet() {
 
-        }
 
         @Override
         public ActionsResult addDot() {
             return null;
         }
 
-        @Override
-        public void clearAll() {
 
-        }
 
         @Override
         public ActionsResult delete() {
@@ -166,7 +166,7 @@ public class CursorStateController extends CursorState implements CalculateInter
         }
 
         @Override
-        public ActionsResult executePercentCalculation() {
+        public ActionsResult[] executePercentCalculation() {
             return null;
         }
     }
@@ -254,7 +254,8 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public ActionsResult addBranches() {
-            if(cursorPosition!=closestElements[0].getPosition())
+            Number closestNumber = (Number)closestElements[0];
+            if(cursorPosition != closestNumber.getFirstDigitPosition())
             {
                 if(unclosedBranchNumber==0)
                 {
@@ -264,7 +265,7 @@ public class CursorStateController extends CursorState implements CalculateInter
                     newNumber.increasePosition(2);
                     ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString("X(",cursorPosition)
                     .addElement(newBranch).addElement(action).addElement(newNumber);
-                    increaseNumberOfUnclosedBranch();
+                    insertNewBranch(newBranch);
                     increaseCursorPosition(2);
                     return builder.build();
 
@@ -299,7 +300,7 @@ public class CursorStateController extends CursorState implements CalculateInter
                             increaseCursorPosition(2);
                             setClosestElements(newBranchPair,newNumber);
                             setCursorNearBranchesState();
-                            increaseNumberOfUnclosedBranch();
+                            insertNewBranch(newBranchPair);
                             return builder.build();
 
 
@@ -311,7 +312,7 @@ public class CursorStateController extends CursorState implements CalculateInter
             {
                 Branch newBranch=new Branch(cursorPosition);
                 InsertingActions.InsertingBuilder insertingBuilder=ActionsResult.Builder.createInsertingBuilder().setString("(",cursorPosition).addElement(newBranch);
-                increaseNumberOfUnclosedBranch();
+                insertNewBranch(newBranch);
                 increaseCursorPosition(1);
                 return insertingBuilder.build();
             }
@@ -336,10 +337,7 @@ public class CursorStateController extends CursorState implements CalculateInter
         }
 
 
-        @Override
-        public void calculateTreeSet() {
 
-        }
 
         @Override
         public ActionsResult addDot() {
@@ -374,16 +372,12 @@ public class CursorStateController extends CursorState implements CalculateInter
 
 
 
-        @Override
-        public void clearAll() {
-
-        }
 
         @Override
         public ActionsResult delete() {
             Number number=(Number)closestElements[0];
             Number.PreviousSymbol previousSymbol=number.defineSymbolBeforeCursor(cursorPosition);
-            ActionsResult result;
+            ActionsResult result=null;
             switch (previousSymbol)
             {
                 case sign:
@@ -538,10 +532,7 @@ public class CursorStateController extends CursorState implements CalculateInter
         }
 
 
-        @Override
-        public void calculateTreeSet() {
 
-        }
 
         @Override
         public ActionsResult addDot() {
@@ -549,10 +540,7 @@ public class CursorStateController extends CursorState implements CalculateInter
         }
 
 
-        @Override
-        public void clearAll() {
 
-        }
 
         @Override
         public ActionsResult delete() {

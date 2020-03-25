@@ -47,13 +47,11 @@ public abstract class CursorState {
         return closestClosedPair;
 
     }
-    protected void increaseNumberOfUnclosedBranch()
+    protected void insertNewBranch(Branch branch)
     {
-        unclosedBranchNumber++;
-    }
-    protected void decreaseNumberOfUnclosedBranch()
-    {
-        unclosedBranchNumber--;
+        branches.add(branch);
+        increaseNumberOfUnclosedBranches();
+
     }
 
 

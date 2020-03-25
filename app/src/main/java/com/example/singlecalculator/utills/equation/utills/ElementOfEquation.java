@@ -29,7 +29,7 @@ public abstract class ElementOfEquation implements Comparable<ElementOfEquation>
         position=position+increasingSize;
     }
     public abstract int getLastPosition();
-
+    public abstract int getSizeOfStringRepresentation();
     @Override
     public int compareTo(ElementOfEquation elementOfEquation) {
 

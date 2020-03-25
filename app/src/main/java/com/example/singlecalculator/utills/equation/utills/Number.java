@@ -8,60 +8,18 @@ import androidx.annotation.NonNull;
  *Note:
  *
  */
+
 public class Number extends ElementOfEquation {
     private static final String TAG = "Numbers";
-    private static final int NAXIMUM_NUMBER_SIZE=15;
+    private static final int MAXIMUM_NUMBER_SIZE =15;
     private boolean isMinus=false;
-    private int dotPosition;
+    private int dotPosition=-2;
     private boolean hasDot=false;
     private int numberOfDigits=0;
-
-    public boolean decreaseNumberOfDiggits(int sizeOfDecreasing) {
-        if(numberOfDigits>0)
-            numberOfDigits--;
-        return numberOfDigits!=0;
-    }
-
     public enum PreviousSymbol {digit,dot,sign}
+
     public Number(int position) {
         super(position,TypeOfElement.Number);
-    }
-
-    public int getNumberOfDigits() {
-        return numberOfDigits;
-    }
-
-    public void setNumberOfDigits(int numberOfDigits) {
-        this.numberOfDigits = numberOfDigits;
-    }
-
-    public boolean increaseNumberOfDigits(int increasingSize)
-    {
-    if(numberOfDigits<NAXIMUM_NUMBER_SIZE||increasingSize<0)
-    {
-        numberOfDigits=numberOfDigits+increasingSize;
-        return true;
-    }
-    return false;
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
-        StringBuilder sb=new StringBuilder();
-        sb.append("startPosition");
-        sb.append(this.position);
-        sb.append("endPosition");
-        sb.append(this.getLastPosition());
-            return sb.toString();
-    }
-    @Override
-    public int getLastPosition()
-    {
-        int sizeOfDot=hasDot?1:0;
-        int minusSize=isMinus?1:0;
-
-        return position+getNumberOfFields()+sizeOfDot+minusSize;
     }
 
     public boolean isHasDot() {
@@ -92,15 +50,61 @@ public class Number extends ElementOfEquation {
         this.dotPosition = dotPosition;
     }
 
-
-
-
-    public int getNumberOfFields()
-    {
-        int minusSize=isMinus?1:0;
-        int dotSize=hasDot?1:0;
-        return minusSize+dotSize+getNumberOfDigits();
+    public boolean decreaseNumberOfDiggits(int sizeOfDecreasing) {
+        if(numberOfDigits>0)
+            numberOfDigits=numberOfDigits-sizeOfDecreasing;
+        return numberOfDigits!=0;
     }
+
+
+
+    public int getNumberOfDigits() {
+        return numberOfDigits;
+    }
+
+    public void setNumberOfDigits(int numberOfDigits) {
+        this.numberOfDigits = numberOfDigits;
+    }
+
+    public boolean increaseNumberOfDigits(int increasingSize)
+    {
+    if(numberOfDigits< MAXIMUM_NUMBER_SIZE ||increasingSize<0)
+    {
+        numberOfDigits=numberOfDigits+increasingSize;
+        return true;
+    }
+    return false;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("startPosition");
+        sb.append(this.position);
+        sb.append("endPosition");
+        sb.append(this.getLastPosition());
+            return sb.toString();
+    }
+    @Override
+    public int getLastPosition()
+    {
+        return position+getSizeOfStringRepresentation();
+    }
+
+    @Override
+    public int getSizeOfStringRepresentation() {
+        int sizeOfDot=hasDot?1:0;
+        int sizeOfMinus=isMinus?1:0;
+        return numberOfDigits+sizeOfDot+sizeOfMinus;
+    }
+
+
+
+
+
+
+
 
 
     public Number separateNumber(int cursorPosition) {

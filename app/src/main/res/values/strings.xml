@@ -7,6 +7,7 @@
     <string name="cant_add_action_now">Cant add action now</string>
     <string name="cant_execute_action">"Can't execute action now "</string>
     <string name="number_already_has_dot">This number already has dot</string>
+    <string name="max_length_of_userInput">Max length of equation is 100 symbols</string>
 
     <string-array name="second_panel_first_state">
             <item>2nd</item>

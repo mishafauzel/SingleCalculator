@@ -50,7 +50,12 @@ public class Action extends ElementOfEquation {
 
     @Override
     public int getLastPosition() {
-        return position+1;
+        return position+getSizeOfStringRepresentation();
+    }
+
+    @Override
+    public int getSizeOfStringRepresentation() {
+        return 1;
     }
 
     @Override

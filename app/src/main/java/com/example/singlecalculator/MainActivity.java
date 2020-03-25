@@ -6,9 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.singlecalculator.utills.FirstPanelStrategy;
 import com.example.singlecalculator.utills.calculations.Calculator;
+import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategyOwner;
 
 import java.util.Iterator;
@@ -50,5 +52,11 @@ public class MainActivity extends AppCompatActivity implements StrategyOwner {
     @Override
     public EditText getEquation() {
         return this.findViewById(R.id.equation);
+    }
+
+    @Override
+    public void showErrorToast(UserInputException exception) {
+        Toast.makeText(this,exception.getIdOfStrRes(),Toast.LENGTH_LONG).show();
+        
     }
 }

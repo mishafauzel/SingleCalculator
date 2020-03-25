@@ -19,4 +19,8 @@ public class UserInputExceptionsFactory {
     {
         return new UserInputException("Error: number already has dot",R.string.number_already_has_dot);
     }
+    public static UserInputException getUserInputHasTooManySymbols()
+    {
+        return new UserInputException("Error: user input already has 100 symbols",R.string.max_length_of_userInput);
+    }
 }

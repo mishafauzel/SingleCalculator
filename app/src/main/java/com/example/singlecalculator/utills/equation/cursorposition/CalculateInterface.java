@@ -8,9 +8,9 @@ public interface CalculateInterface {
      ActionsResult addDigits(ButtonsTag tag);
      ActionsResult addBranches();
      ActionsResult changeSign();
-     void calculateTreeSet();
+
      ActionsResult addDot();
-     void clearAll();
+
      ActionsResult delete();
      ActionsResult[] executePercentCalculation();
 
