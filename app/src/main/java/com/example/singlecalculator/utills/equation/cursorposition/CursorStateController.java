@@ -90,10 +90,11 @@ public class CursorStateController extends CursorState implements CalculateInter
         }
         else
         {
-            if(nearestElements[0].getType()== ElementOfEquation.TypeOfElement.Action||nearestElements[1].getType()== ElementOfEquation.TypeOfElement.Action)
-                setCursorBetweenNumberAndActionState();
-            else
+            if(nearestElements[0].getType()== ElementOfEquation.TypeOfElement.Branch||nearestElements[1].getType()== ElementOfEquation.TypeOfElement.Branch)
                 setCursorNearBranchesState();
+            else
+            setCursorBetweenNumberAndActionState();
+
         }
     }
     private void setCursorWithinNumberState()
@@ -136,17 +137,58 @@ public class CursorStateController extends CursorState implements CalculateInter
 
         @Override
         public ActionsResult addBranches() {
-            Branch branch=new Branch(cursorPosition);
-            if(closestElements[0].getType()== ElementOfEquation.TypeOfElement.Action)
+            Branch branch=null;
+
+            Branch openingBranch;
+            if(closestElements[0].getType()== ElementOfEquation.TypeOfElement.Action) {
+                branch = new Branch(cursorPosition);
                 branch.setOpening(true);
-            else
-                Branch openingBranh=getLastUnclosedBranch(cursorPosition);
-            return null;
+                Branch oldBranchesPair=findSmallestPairOfBranchArrounCursor(cursorPosition);
+                if(oldBranchesPair!=null) {
+                    branch.setPairBranch(oldBranchesPair.getPairBranch());
+                    branch.getPairBranch().setPairBranch(branch);
+                    oldBranchesPair.setPairBranch(null);
+                }
+                }
+            else {
+                 openingBranch= getLastUnclosedBranch(cursorPosition);
+                 if(openingBranch != null) {
+                     branch=new Branch(cursorPosition);
+                     branch.setOpening(false);
+                     branch.setPairBranch(openingBranch);
+                     openingBranch.setPairBranch(branch);
+                 }
+                 }
+            ActionsResult actionsResult;
+            if(branch!=null)
+            {
+                String addingString=branch.isOpening()?"(":")";
+                actionsResult=ActionsResult.Builder.createInsertingBuilder().setString(addingString,cursorPosition).addElement(branch).build();
+                increaseCursorPosition(addingString.length());
+            }
+            actionsResult=ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.AddingBranchImpossibleInThisPosition()).build();
+                return actionsResult;
         }
 
         @Override
         public ActionsResult changeSign() {
             Number number=(Number)getNumberFromClosestElements();
+            Branch branch;
+            ActionsResult result;
+            number.setMinus(!number.isMinus());
+            if(number.isMinus())
+            {
+                branch=new Branch(number.getPosition());
+                branch.setOpening(true);
+                Branch oldBranchPair=findSmallestPairOfBranchArrounCursor(branch.getPosition());
+                branch.setPairBranch(oldBranchPair.getPairBranch());
+                branch.getPairBranch().setPairBranch(branch);
+                branch.setClosed(true);
+                oldBranchPair.setPairBranch(nu);
+                number.increasePosition(1);
+                result=ActionsResult.Builder.createInsertingBuilder().setString("-",number.getPosition()).build();
+            }
+
 
             return null;
         }

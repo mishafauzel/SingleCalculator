@@ -23,4 +23,8 @@ public class UserInputExceptionsFactory {
     {
         return new UserInputException("Error: user input already has 100 symbols",R.string.max_length_of_userInput);
     }
+    public static UserInputException AddingBranchImpossibleInThisPosition()
+    {
+        return new UserInputException("Error: adding branch impossible in this cursor position",R.string.adding_imposible_in_this_position);
+    }
 }

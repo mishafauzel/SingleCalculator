@@ -8,6 +8,7 @@
     <string name="cant_execute_action">"Can't execute action now "</string>
     <string name="number_already_has_dot">This number already has dot</string>
     <string name="max_length_of_userInput">Max length of equation is 100 symbols</string>
+    <string name="adding_imposible_in_this_position">Adding imposible in this position</string>
 
     <string-array name="second_panel_first_state">
             <item>2nd</item>

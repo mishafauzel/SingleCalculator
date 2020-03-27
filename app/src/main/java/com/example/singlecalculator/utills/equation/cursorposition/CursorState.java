@@ -11,8 +11,7 @@ import java.util.TreeSet;
 public abstract class CursorState {
     protected static ElementOfEquation[] closestElements=new ElementOfEquation[2];
     protected static int cursorPosition;
-    protected static int unclosedBranchNumber=0;
-    protected static TreeSet<Branch> branches=new TreeSet<>();
+
     public static ElementOfEquation[] getClosestElements() {
         return closestElements;
     }
@@ -67,18 +66,6 @@ public abstract class CursorState {
                 return number;
         }
         return null;
-    }
-    public static boolean hasUnclosedBranches()
-    {
-        return unclosedBranchNumber==0;
-    }
-    public static void increaseNumberOfUnclosedBranches()
-    {
-        unclosedBranchNumber++;
-    }
-    public static void decreaseNumberOfUnclosedBranches()
-    {
-        unclosedBranchNumber=unclosedBranchNumber==0?0:unclosedBranchNumber++;
     }
 
 
