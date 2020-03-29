@@ -1,6 +1,6 @@
 package com.example.singlecalculator.utills.equation;
 
-import androidx.annotation.NonNull;
+import android.hardware.camera2.CameraManager;
 
 import com.example.singlecalculator.utills.ButtonsTag;
 import com.example.singlecalculator.utills.equation.actions.ActionsResult;
@@ -8,7 +8,7 @@ import com.example.singlecalculator.utills.equation.actions.DeletingActions;
 import com.example.singlecalculator.utills.equation.actions.InsertingActions;
 import com.example.singlecalculator.utills.equation.cursorposition.CalculateInterface;
 import com.example.singlecalculator.utills.equation.cursorposition.CursorState;
-import com.example.singlecalculator.utills.equation.cursorposition.CursorStateController;
+import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
 import com.example.singlecalculator.utills.equation.exceptions.UserInputExceptionsFactory;
 import com.example.singlecalculator.utills.equation.utills.Action;
 import com.example.singlecalculator.utills.equation.utills.Branch;
@@ -16,43 +16,44 @@ import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 import com.example.singlecalculator.utills.equation.utills.Number;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
+public class EquationTreeSetManager  {
     private TreeSet<ElementOfEquation> equationTreeSet = new TreeSet<>();
-    private boolean isAscending=true;
+
     private TreeSet<Branch> branches=new TreeSet<>();
     protected int unclosedBranchNumber=0;
-
+    private int cursorPosition=0;
+    private int numberOfUnclosedBranch=0;
+    private int totalSizeOfInputString=0;
     private CursorStateController stateController=new CursorStateController();
-    @NonNull
-    @Override
-    public Iterator<ElementOfEquation> iterator() {
-        Iterator<ElementOfEquation> retIterator=equationTreeSet.iterator();
-        if(!isAscending)
-            retIterator=equationTreeSet.descendingIterator();
-        return retIterator;
+
+    public void setCursorPosition(int cursorPosition)
+    {
+     this.cursorPosition=cursorPosition;
+     ElementOfEquation[] nearestElements=findNearestElements();
+     stateController.defineCurrentState(nearestElements);
     }
-    public ElementOfEquation[] findNearestElements(int cursorPosition)
+    public ElementOfEquation[] findNearestElements()
     {
         ElementOfEquation[] nearestElements=new ElementOfEquation[2];
-        for (ElementOfEquation elementOfEquation :equationTreeSet
-             ) {
-          if(elementOfEquation.getPosition()<=cursorPosition)
-          {
-            if(elementOfEquation.getLastPosition()>=cursorPosition)
-            {
-                int insertingPosition=nearestElements[0]==null?0:1;
-                nearestElements[insertingPosition]=elementOfEquation;
-            }
-          }
-          else
-              break;
+        ElementOfEquation elementChecker=new ElementOfEquation(cursorPosition);
+        ElementOfEquation previousElement=equationTreeSet.floor(elementChecker);
+        if(previousElement.getType()== ElementOfEquation.TypeOfElement.Number&&previousElement.getLastPosition()>=cursorPosition)
+        {
+            nearestElements[0]=previousElement;
+            nearestElements[1]=null;
+            return nearestElements;
         }
-        return nearestElements;
+        else
+        {
+            nearestElements[0]=previousElement;
+            nearestElements[1]=equationTreeSet.ceiling(elementChecker);
+            return nearestElements;
+        }
     }
 
 
@@ -66,9 +67,9 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
         int deletingSize=0;
         ArrayList<ActionsResult> arrayListOfActionsResult=new ArrayList<>();
         ElementOfEquation previousElement=null;
-        isAscending=true;
+
         for (ElementOfEquation element :
-                this) {
+               equationTreeSet) {
             if(previousElement==null)
             {previousElement=element;
             continue;}
@@ -99,43 +100,79 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
         }
         return arrayListOfActionsResult.toArray(new ActionsResult[arrayListOfActionsResult.size()]);
     }
+    public boolean insertNewValueToTreeSet(TreeSet<ElementOfEquation> elementsOfEquation,int size) {
 
-    public void deleteElements(ElementOfEquation[] elementsOfEquation) {
-
-        equationTreeSet.removeAll(Arrays.asList(elementsOfEquation));
-        int[] dataForIncreasing=calculateMinPositionAndSizeChange(elementsOfEquation,false);
-        increasePositionOfElements(dataForIncreasing[0],dataForIncreasing[1]);
-    }
-
-    public void insertNewValueToTreeSet(ElementOfEquation[] elementsOfEquation) {
-        int[] dataForIncreasing=calculateMinPositionAndSizeChange(elementsOfEquation,false);
-        increasePositionOfElements(dataForIncreasing[0],dataForIncreasing[1]);
-        equationTreeSet.addAll(Arrays.asList(elementsOfEquation));
+        increasePositionOfElements(elementsOfEquation.first(),size);
+        cursorPosition=cursorPosition+size;
+        totalSizeOfInputString=totalSizeOfInputString+size;
+        return equationTreeSet.addAll(elementsOfEquation);
 
     }
-
-    public void increasePositionOfElements(int insertingPosition, int sizeOfIncreasing) {
-        isAscending=false;
+    private  void increasePositionOfElements(ElementOfEquation smalestElement,int increasingSize) {
+        SortedSet<ElementOfEquation> increasingElements=equationTreeSet.tailSet(smalestElement);
         for (ElementOfEquation element :
-                this) {
-            if (element.getPosition() > insertingPosition)
-                element.increasePosition(sizeOfIncreasing);
-            else break;
+                increasingElements) {
+            element.increasePosition(increasingSize);
         }
+
+
     }
-    private int[] calculateMinPositionAndSizeChange(ElementOfEquation[] elementsOfEquation,boolean isInserting)
+    public void deleteElements(TreeSet<ElementOfEquation> elementsOfEquation,int size) {
+
+        equationTreeSet.removeAll(elementsOfEquation);
+        increasePositionOfElements(elementsOfEquation.first(),size);
+        cursorPosition=cursorPosition-size;
+        totalSizeOfInputString=totalSizeOfInputString-size;
+    }
+
+
+
+
+    private void addBranches(Branch branch)
     {
-        int minPos=101;
-        int sizeOfChange=0;
-        int multiplier=isInserting?1:-1;
-        for (ElementOfEquation element :
-                elementsOfEquation) {
-            minPos=minPos>element.getPosition()?element.getPosition():minPos;
-            sizeOfChange=sizeOfChange+element.getSizeOfStringRepresentation()*multiplier;
-
-        }
-        return new int[]{minPos,sizeOfChange};
+        if(branch.isOpening())
+            numberOfUnclosedBranch++;
+        else
+            numberOfUnclosedBranch--;
+        TreeSet<ElementOfEquation> addingBranch = new TreeSet<ElementOfEquation>();
+        addingBranch.add(branch);
+        insertNewValueToTreeSet(addingBranch,1);
+        branches.add(branch);
+        recalculateBranch();
     }
+    private void recalculateBranch()
+    {
+        LinkedList<Branch> openingBranches=new LinkedList<>();
+        for (Branch branch :
+                branches) {
+            if (branch.isOpening())
+                openingBranches.offer(branch);
+            else {
+                Branch openingBranch=openingBranches.pollLast();
+                openingBranch.setPairBranch(branch);
+                branch.setPairBranch(openingBranch);
+            }
+        }
+    }
+    private Branch getPreviousOpeningBranches()
+    {
+     Branch testBranch=new Branch(cursorPosition);
+     SortedSet<Branch> subSet=branches.tailSet(testBranch);
+      TreeSet<Branch> subsetTree=new TreeSet<>(subSet);
+      Iterator<Branch> iterator=subsetTree.descendingIterator();
+      while (iterator.hasNext())
+      {
+          Branch branch=iterator.next();
+          if(branch.isOpening()&&!branch.isClosed())
+              return branch;
+
+
+      }
+      return null;
+
+    }
+
+
     public class CursorStateController extends CursorState implements CalculateInterface {
 
 
@@ -234,42 +271,12 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
         {
             currentState=cursorNearBranches;
         }
-        private void setUserInputsIsEmtyState()
+        private void setUserInputsIsEmptyState()
         {
             currentState=userInputIsEmpty;
         }
 
-        protected void redefineBranchPair()
-        {
-            Branch previousBranch=null;
-            for (Branch branch :
-                    branches) {
-                if(previousBranch==null)
-                {
-                    previousBranch=branch;
-                    continue;
-                }
-                if(branch.isClosed())
-                {
-                    previousBranch.setPairBranch(branch.getPairBranch());
-                    previousBranch.getPairBranch().setPairBranch(previousBranch);
-                    branch.setPairBranch(null);
-                }
-                else break;
-            }
-        }
-        public static boolean hasUnclosedBranches()
-        {
-            return unclosedBranchNumber==0;
-        }
-        public static void increaseNumberOfUnclosedBranches()
-        {
-            unclosedBranchNumber++;
-        }
-        public static void decreaseNumberOfUnclosedBranches()
-        {
-            unclosedBranchNumber=unclosedBranchNumber==0?0:unclosedBranchNumber++;
-        }
+
 
         public class CursorBetweenNumberAndAction extends CursorState implements CalculateInterface {
             @Override
@@ -425,12 +432,24 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
                 {
                     Action newAction=new Action(cursorPosition,String.valueOf(tag.getText()));
                     Number newNumber=oldNumber.separateNumber(cursorPosition);
+
                     newNumber.increasePosition(1);
-                    ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().addElement(newAction).addElement(newNumber)
-                            .setString(String.valueOf(tag.getText()),cursorPosition);
-                    setCursorBetweenNumberAndActionState();
-                    com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.setClosestElements(newAction,newNumber);
-                    increaseCursorPosition(1);
+                    ActionsResult.Builder builder;
+                    TreeSet<ElementOfEquation> insertingValues=new TreeSet<>();
+                    insertingValues.add(newAction);
+                    insertingValues.add(newNumber);
+                    if(insertNewValueToTreeSet(insertingValues,1)) {
+                        builder = ActionsResult.Builder.createInsertingBuilder()
+                                .setString(String.valueOf(tag.getText()), newAction.getPosition());
+                        setCursorBetweenNumberAndActionState();
+                        CursorStateController.setClosestElements(newAction,newNumber);
+                    }
+                    else
+
+                        builder=ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getUserInputHasTooManySymbols());
+
+
+
                     return builder.build();
 
                 }
@@ -444,10 +463,10 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
 
             @Override
             public ActionsResult addDigits(ButtonsTag tag) {
-
+                ActionsResult.Builder builder;
                 if(((Number)closestElements[0]).increaseNumberOfDigits(1));
-                ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString(String.valueOf(tag),cursorPosition);
-                increaseCursorPosition(1);
+                {builder=ActionsResult.Builder.createInsertingBuilder().setString(String.valueOf(tag),cursorPosition);
+                cursorPosition++;}
                 return builder.build();
             }
 
@@ -462,58 +481,45 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
                         Action action=new Action(cursorPosition-1,"X");
                         Number newNumber=((Number)closestElements[0]).separateNumber(cursorPosition);
                         newNumber.increasePosition(2);
-                        ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString("X(",cursorPosition)
-                                .addElement(newBranch).addElement(action).addElement(newNumber);
-                        insertNewBranch(newBranch);
-                        increaseCursorPosition(2);
+                        TreeSet<ElementOfEquation> newInsertion=new TreeSet<>();
+                        newInsertion.add(newBranch);
+                        newInsertion.add(action);
+                        newInsertion.add(newNumber);
+                        ActionsResult.Builder builder;
+                        if(insertNewValueToTreeSet(newInsertion,2))
+                        builder=ActionsResult.Builder.createInsertingBuilder().setString("X(",action.getPosition());
+                        else
+                            builder=ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getUserInputHasTooManySymbols());
                         return builder.build();
 
                     }
                     else
                     {
-                        Branch branchRequiredClosed;
-                        if((branchRequiredClosed = getLastUnclosedBranch(cursorPosition))!=null)
-                        {
-                            Branch closedBranch=new Branch(cursorPosition,false);
-                            branchRequiredClosed.setClosed(true);
-                            branchRequiredClosed.setPairBranch(closedBranch);
-                            Action action=new Action(cursorPosition+1,"X");
-                            Number newNumber=((Number)closestElements[0]).separateNumber(cursorPosition);
-                            newNumber.increasePosition(2);
-                            ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString(")X",cursorPosition)
-                                    .addElement(closedBranch).addElement(action).addElement(newNumber);
-                            increaseCursorPosition(2);
-                            decreaseNumberOfUnclosedBranches();
-                            return builder.build();
-                        }
+
+
+                        Branch openingBranch= getPreviousOpeningBranches();
+                        if(openingBranch==null)
+                            return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.AddingBranchImpossibleInThisPosition()).build();
                         else
                         {
-                            Branch oldBranch= findSmallestPairOfBranchArrounCursor(cursorPosition);
-                            Branch newBranchPair=new Branch(cursorPosition,true);
-                            newBranchPair.setPairBranch(oldBranch.getPairBranch());
-                            oldBranch.setPairBranch(null);
-                            Action newAction=new Action(cursorPosition-1,"X");
-                            Number newNumber=((Number)closestElements[0]).separateNumber(cursorPosition);
-                            ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString("X(",cursorPosition)
-                                    .addElement(newBranchPair).addElement(newAction).addElement(newNumber);
-                            increaseCursorPosition(2);
-                            setClosestElements(newBranchPair,newNumber);
-                            setCursorNearBranchesState();
-                            insertNewBranch(newBranchPair);
-                            return builder.build();
-
-
+                            Branch newBranch=new Branch(cursorPosition,false);
+                            openingBranch.setPairBranch(newBranch);
+                            newBranch.setPairBranch(openingBranch);
+                            Action action=new Action(cursorPosition+1,"x");
+                            EquationTreeSetManager.this.addBranches(newBranch);
+                            TreeSet<ElementOfEquation> addingElemnt=new TreeSet<>();
+                            addingElemnt.add(action);
+                            insertNewValueToTreeSet(addingElemnt,1);
+                            return  ActionsResult.Builder.createInsertingBuilder().setString(")X",newBranch.getPosition()).build();
 
                         }
                     }
                 }
                 else
                 {
-                    Branch newBranch=new Branch(cursorPosition);
-                    InsertingActions.InsertingBuilder insertingBuilder=ActionsResult.Builder.createInsertingBuilder().setString("(",cursorPosition).addElement(newBranch);
-                    insertNewBranch(newBranch);
-                    increaseCursorPosition(1);
-                    return insertingBuilder.build();
+
+
+                    return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.AddingBranchImpossibleInThisPosition()).build();
                 }
 
             }
@@ -529,7 +535,8 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
                 }
                 else
                 {
-                    actionResult=ActionsResult.Builder.createInsertingBuilder().setString("-",number.getPosition()).build();
+                    
+                    actionResult=ActionsResult.Builder.createInsertingBuilder().setString("(-",number.getPosition()).build();
                 }
                 number.setMinus(!number.isMinus());
                 return actionResult;
@@ -541,11 +548,13 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
             @Override
             public ActionsResult addDot() {
                 Number number = (Number) closestElements[0];
+                int increasingSize=0;
                 if (number.isHasDot())
                     return ActionsResult.Builder.createActionWithErrorBuilder()
                             .setException(UserInputExceptionsFactory.getNumberAlreadyHasDot()).build();
                 else {
                     {
+                        increasingSize=1;
                         String insertionInEditText = ".";
                         if (cursorPosition == number.getFirstDigitPosition()) {
                             if (!(number.increaseNumberOfDigits(1)))
@@ -553,11 +562,13 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
                                         .setException(UserInputExceptionsFactory.getNumberToBigForInsertion()).build();
 
                             else {
+                                increasingSize=2;
                                 insertionInEditText = "0.";
+                                number.increaseNumberOfDigits(1);
 
                             }
                         }
-
+                        increasePositionOfElements(number,increasingSize);
                         number.defineCursorPositionRelativeToStartPosition(cursorPosition);
                         number.setDotPosition(cursorPosition);
                         number.setHasDot(true);
@@ -697,11 +708,15 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
             {
                 Number newElement=new Number(cursorPosition);
                 newElement.setNumberOfDigits(1);
-                ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().addElement(newElement)
-                        .setString(String.valueOf(tag.getText()),cursorPosition);
-                com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.this.setCursorWithinNumberState();
-                com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.setClosestElements(newElement);
-                com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.this.increaseCursorPosition(1);
+                ActionsResult.Builder builder;
+                TreeSet<ElementOfEquation> newTreeSet=new TreeSet<>();
+                newTreeSet.add(newElement);
+               EquationTreeSetManager.this.insertNewValueToTreeSet(newTreeSet,1);
+                builder=ActionsResult.Builder.createInsertingBuilder().setString(String.valueOf(tag.getText()),cursorPosition);
+
+                CursorStateController.this.setCursorWithinNumberState();
+                CursorStateController.setClosestElements(newElement);
+
                 return builder.build();
 
 
@@ -714,11 +729,11 @@ public class EquationTreeSetManager implements Iterable<ElementOfEquation> {
                 newElement.setOpening(true);
                 newElement.setClosed(false);
                 branches.add(newElement);
-                ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString("(",cursorPosition)
-                        .addElement(newElement);
-                com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.this.setCursorNearBranchesState();
-                com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.setClosestElements(newElement);
-                com.example.singlecalculator.utills.equation.cursorposition.CursorStateController.this.increaseCursorPosition(1);
+                EquationTreeSetManager.this.addBranches(newElement);
+                ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString("(",cursorPosition);
+
+                CursorStateController.this.setCursorNearBranchesState();
+                CursorStateController.setClosestElements(newElement);
                 return builder.build();
 
 

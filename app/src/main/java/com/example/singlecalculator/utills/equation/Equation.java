@@ -20,7 +20,7 @@ public class Equation  {
     private static final String TAG = "Equation";
     private EditText userInput;
     private EquationTreeSetManager treeSetManager=new EquationTreeSetManager();
-    private CursorStateController cursorStateController=new CursorStateController();
+
 
 
     private static Equation instance;
@@ -28,9 +28,7 @@ public class Equation  {
         @Override
         public void onClick(View view) {
             int position=userInput.getSelectionStart();
-            cursorStateController.setCursorPosition(position);
-            ElementOfEquation[] nearestElements=treeSetManager.findNearestElements(position);
-            cursorStateController.defineCurrentState(nearestElements);
+            treeSetManager.setCursorPosition(position);
 
 
         }

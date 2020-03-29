@@ -10,48 +10,14 @@ import java.util.TreeSet;
 
 public abstract class CursorState {
     protected static ElementOfEquation[] closestElements=new ElementOfEquation[2];
-    protected static int cursorPosition;
+
 
     public static ElementOfEquation[] getClosestElements() {
         return closestElements;
     }
-    protected  Branch getLastUnclosedBranch(int cursorPosition)
-    {
-        Branch previousBranch=null;
-        for (Branch branch :
-                branches) {
-            if (branch.getPosition() < cursorPosition)
-            if(branch.isClosed())
-                previousBranch=branch;
-            if(branch.getPosition()>cursorPosition)
-                break;
-            }
-        return previousBranch;
-    }
-    protected Branch  findSmallestPairOfBranchArrounCursor(int cursorPosition)
-    {
 
 
-        Branch closestClosedPair=null;
-        for (Branch branch :
-                branches) {
-            if (branch.isClosed())
-                if (branch.getPairBranch().getPosition() > cursorPosition) {
-                    closestClosedPair = branch;
-                }
-            if (branch.getPosition() > cursorPosition)
-                break;
 
-        }
-        return closestClosedPair;
-
-    }
-    protected void insertNewBranch(Branch branch)
-    {
-        branches.add(branch);
-        increaseNumberOfUnclosedBranches();
-
-    }
 
 
     protected static void setClosestElements(ElementOfEquation... elements) {
@@ -73,15 +39,5 @@ public abstract class CursorState {
 
 
 
-    public static int getCursorPosition() {
-        return cursorPosition;
-    }
 
-    public static void setCursorPosition(int cursorPosition) {
-        CursorState.cursorPosition = cursorPosition;
-    }
-
-    public void increaseCursorPosition(int i) {
-        cursorPosition=cursorPosition+i;
-    }
 }
