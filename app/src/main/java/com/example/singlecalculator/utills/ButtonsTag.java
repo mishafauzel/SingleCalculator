@@ -26,7 +26,7 @@ public class ButtonsTag {
                 '}';
     }
 
-    public enum ButtonType{digit,action,delete,branches,equals,chengeSign,percent,dot};
+    public enum ButtonType{digit,action,delete,branches,equals,chengeSign,percent,dot,equation}
 
 
 

@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 
 public class Number extends ElementOfEquation {
     private static final String TAG = "Numbers";
-    private static final int MAXIMUM_NUMBER_SIZE =15;
+    public static final int MAXIMUM_NUMBER_SIZE =15;
     private boolean isMinus=false;
     private int dotPosition=-2;
     private boolean hasDot=false;

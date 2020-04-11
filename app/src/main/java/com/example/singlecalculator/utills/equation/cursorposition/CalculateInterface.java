@@ -1,17 +1,17 @@
 package com.example.singlecalculator.utills.equation.cursorposition;
 
 import com.example.singlecalculator.utills.ButtonsTag;
-import com.example.singlecalculator.utills.equation.actions.ActionsResult;
+
 
 public interface CalculateInterface {
-     ActionsResult addAction(ButtonsTag tag);
-     ActionsResult addDigits(ButtonsTag tag);
-     ActionsResult addBranches();
-     ActionsResult changeSign();
+     void addAction(ButtonsTag tag);
+     void addDigits(ButtonsTag tag);
+     void addBranches();
+     void changeSign();
 
-     ActionsResult addDot();
+     void addDot();
 
-     ActionsResult delete();
-     ActionsResult[] executePercentCalculation();
+     void delete();
+     void executePercentCalculation();
 
 }

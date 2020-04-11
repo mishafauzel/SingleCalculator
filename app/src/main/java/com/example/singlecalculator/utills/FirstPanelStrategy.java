@@ -1,17 +1,24 @@
 package com.example.singlecalculator.utills;
 
+import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
+
 import com.example.singlecalculator.R;
-import com.example.singlecalculator.utills.calculations.Calculator;
-import com.example.singlecalculator.utills.equation.Equation;
-import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
+import com.example.singlecalculator.utills.equation.EquationTreeSetManager;
+import com.example.singlecalculator.utills.equation.actions.ActionsResult;
 import com.example.singlecalculator.utills.onClickListeners.DiggitsClickListener;
-import com.example.singlecalculator.utills.strategiesInterdaces.ExceptionHandlerForUserInput;
+import com.example.singlecalculator.utills.strategiesInterdaces.ActionsResultLiveDataOwner;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategiesInterface;
 import com.example.singlecalculator.utills.strategiesInterdaces.StrategyOwner;
 
-public class FirstPanelStrategy implements StrategiesInterface, ExceptionHandlerForUserInput {
+import java.lang.ref.WeakReference;
+
+public class FirstPanelStrategy extends ViewModel implements StrategiesInterface, ActionsResultLiveDataOwner{
     private final int[] idsOfButtons=new int[]{
             R.id.delete_button, R.id.branches,R.id.equals, R.id.changeSign,R.id.percent,R.id.divide,
             R.id.multiply, R.id.minus,R.id.plus,R.id.dot
@@ -20,48 +27,48 @@ public class FirstPanelStrategy implements StrategiesInterface, ExceptionHandler
 
     };
     private ButtonsTag[] buttonTypes=new ButtonsTag[20];
-    private TextView[] buttons;
-    private StrategyOwner owner;
-    private Calculator calculator;
+
+
+    MediatorLiveData<ActionsResult[]> resultOfActionsLD;
     private DiggitsClickListener onClicListener;
-    private Equation equation;
-    private static FirstPanelStrategy instance;
-    private FirstPanelStrategy()
+
+
+    public FirstPanelStrategy()
     {
-        calculator=Calculator.getInstance();
         onClicListener=new DiggitsClickListener();
         createButtonTypeArray();
+        resultOfActionsLD.addSource(((ActionsResultLiveDataOwner) onClicListener).getLiveData(), new Observer<ActionsResult[]>() {
+            @Override
+            public void onChanged(ActionsResult[] actionsResult) {
+                resultOfActionsLD.setValue(actionsResult);
+            }
+        });
     }
 
 
-    public static FirstPanelStrategy getInstance()
-    {
-        if(instance==null)
-            instance=new FirstPanelStrategy();
-        return instance;
-    }
+
 
     @Override
-    public void setStrategyOwner(StrategyOwner owner) {
-        this.owner=owner;
-        equation=Equation.getInstance(this.owner.getEquation());
-    }
+    public void bindTextViews(StrategyOwner owner) {
 
-    @Override
-    public void bindTextViews() {
-
-        buttons=owner.getButtons(idsOfButtons);
+        TextView[] buttons=owner.getButtons(idsOfButtons);
         if(onClicListener==null)
         {
             onClicListener=new DiggitsClickListener();
         }
-        onClicListener.setEquation(equation);
+
       for(int i = 0; i < buttons.length; i++)
       {
           buttons[i].setTag(buttonTypes[i].setText(buttons[i].getText().toString().charAt(0)));
           buttons[i].setOnClickListener(onClicListener);
 
-    }
+      }
+      EditText equation=owner.getEquation();
+      equation.setOnClickListener(onClicListener);
+      equation.setTag(new ButtonsTag(ButtonsTag.ButtonType.equation));
+
+
+
 }
 
     private void createButtonTypeArray()
@@ -80,7 +87,7 @@ public class FirstPanelStrategy implements StrategiesInterface, ExceptionHandler
     }
 
     @Override
-    public void handleUserInputException(UserInputException exception) {
-        owner.showErrorToast(exception);
+    public LiveData<ActionsResult[]> getLiveData() {
+        return resultOfActionsLD;
     }
 }

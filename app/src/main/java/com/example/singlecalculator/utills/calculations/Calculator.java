@@ -1,9 +1,19 @@
 package com.example.singlecalculator.utills.calculations;
 
-import com.example.singlecalculator.utills.equation.Equation;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
-public class Calculator {
+import com.example.singlecalculator.utills.equation.actions.ActionsResult;
+import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
+import com.example.singlecalculator.utills.strategiesInterdaces.ActionsResultLiveDataOwner;
+
+import java.util.TreeSet;
+
+public class Calculator implements ActionsResultLiveDataOwner {
+    private LiveData<ActionsResult> resultLiveData = new MutableLiveData<>();
     private static Calculator instanse;
+
+
     public static Calculator getInstance()
     {
         if(instanse==null)
@@ -11,7 +21,20 @@ public class Calculator {
         return instanse;
     }
 
-    public void calculate(Equation equation) {
+    public void calculate(TreeSet<ElementOfEquation> equation) {
+
+    }
+
+    @Override
+    public LiveData<ActionsResult> getLiveData() {
+        return null;
+    }
+
+    public void stopAllCalculation() {
+
+    }
+
+    public void addNewCalculation(TreeSet<ElementOfEquation> equationTreeSet) {
 
     }
 }

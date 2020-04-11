@@ -1,7 +1,7 @@
 package com.example.singlecalculator.utills.equation.actions;
 
 public class MovingAction extends ActionsResult {
-    public final int fromPosition;
+
     public  final int toPosition;
 
     public MovingAction(int fromPosition, int toPosition) {
@@ -29,6 +29,7 @@ public class MovingAction extends ActionsResult {
         }
         @Override
         public ActionsResult build(){
+            numberOfAction++;
             return new MovingAction(fromPosition,toPosition);
         }
     }

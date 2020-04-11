@@ -9,7 +9,7 @@ public class InsertingActions extends ActionsResult {
     public static final String INSERTING_CLOSING_BRANCH=")";
     public final boolean newInsertionInString;
     public final String insertingString;
-    public final int insertingPosition;
+
 
 
     public InsertingActions(boolean newInsertionInString,String insertingString, int insertingPosition) {
@@ -42,8 +42,7 @@ public class InsertingActions extends ActionsResult {
         @Override
         public ActionsResult build()
         {
-
-
+            numberOfAction++;
             return new InsertingActions(newInsertionInString,insertingString,insertingPosition);
         }
 

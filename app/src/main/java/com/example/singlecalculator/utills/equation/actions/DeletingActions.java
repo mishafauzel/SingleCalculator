@@ -5,7 +5,7 @@ import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 import java.util.ArrayList;
 
 public class DeletingActions extends ActionsResult {
-    public final int formPosition;
+
     public final int toPosition;
 
 
@@ -38,7 +38,7 @@ public class DeletingActions extends ActionsResult {
 
         @Override
         public ActionsResult build(){
-
+            numberOfAction++;
             return new DeletingActions(fromPosition,toPosition);
         }
     }

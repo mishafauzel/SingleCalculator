@@ -1,8 +1,12 @@
 package com.example.singlecalculator.utills.equation;
 
-import android.hardware.camera2.CameraManager;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.singlecalculator.utills.ButtonsTag;
+import com.example.singlecalculator.utills.calculations.Calculator;
 import com.example.singlecalculator.utills.equation.actions.ActionsResult;
 import com.example.singlecalculator.utills.equation.actions.DeletingActions;
 import com.example.singlecalculator.utills.equation.actions.InsertingActions;
@@ -14,6 +18,8 @@ import com.example.singlecalculator.utills.equation.utills.Action;
 import com.example.singlecalculator.utills.equation.utills.Branch;
 import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 import com.example.singlecalculator.utills.equation.utills.Number;
+import com.example.singlecalculator.utills.strategiesInterdaces.ActionsResultLiveDataOwner;
+import com.example.singlecalculator.utills.strategiesInterdaces.StrategyOwner;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,15 +27,34 @@ import java.util.LinkedList;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class EquationTreeSetManager  {
+public class EquationTreeSetManager implements ActionsResultLiveDataOwner,CalculateInterface  {
+    private static EquationTreeSetManager instance;
     private TreeSet<ElementOfEquation> equationTreeSet = new TreeSet<>();
-
     private TreeSet<Branch> branches=new TreeSet<>();
     protected int unclosedBranchNumber=0;
     private int cursorPosition=0;
-    private int numberOfUnclosedBranch=0;
-    private int totalSizeOfInputString=0;
     private CursorStateController stateController=new CursorStateController();
+    private MutableLiveData<ActionsResult[]> resultLiveData=new MutableLiveData<>();
+    private MediatorLiveData<ActionsResult[]> resultsOfEquations=new MediatorLiveData<>();
+    private Calculator calculator;
+    private ObserverForMediatorLiveData observer=new ObserverForMediatorLiveData();
+    public static EquationTreeSetManager getInstance()
+    {
+        if(instance==null)
+            instance=new EquationTreeSetManager();
+        return instance;
+    }
+    private EquationTreeSetManager()
+    {
+        this.calculator=Calculator.getInstance();
+        resultsOfEquations.addSource(resultLiveData,observer);
+        resultsOfEquations.addSource(((ActionsResultLiveDataOwner)calculator).getLiveData(),observer);
+
+    }
+
+    public CursorStateController getStateController() {
+        return stateController;
+    }
 
     public void setCursorPosition(int cursorPosition)
     {
@@ -59,7 +84,18 @@ public class EquationTreeSetManager  {
 
     public void clearAll()
     {
+        resultLiveData.setValue(new ActionsResult[]{DeletingActions.Builder.createDeletingActionBuilder().setFromPosition(0).setToPosition(equationTreeSet.last().getLastPosition()).build()});
         equationTreeSet.clear();
+        branches.clear();
+        unclosedBranchNumber=0;
+        cursorPosition=0;
+        calculator.stopAllCalculation();
+        stateController.setUserInputsIsEmptyState();
+
+    }
+    public TreeSet<ActionsResult> createActionsResultTreeSet()
+    {
+     return new TreeSet<>();
     }
     public ActionsResult[] checkTreeSetElementsCorrect()
     {
@@ -100,13 +136,34 @@ public class EquationTreeSetManager  {
         }
         return arrayListOfActionsResult.toArray(new ActionsResult[arrayListOfActionsResult.size()]);
     }
-    public boolean insertNewValueToTreeSet(TreeSet<ElementOfEquation> elementsOfEquation,int size) {
+    public TreeSet<ActionsResult> insertNewValueToTreeSet(,TreeSet<ActionsResult> results,TreeSet<ElementOfEquation> elementsOfEquation, String insertingString) {
+        if(equationTreeSet.last().getLastPosition()+insertingString.length()<100) {
+            increasePositionOfElements(elementsOfEquation.first(), insertingString.length());
+            cursorPosition = cursorPosition + insertingString.length();
+            ActionsResult.Builder actionResult= ActionsResult.Builder.createInsertingBuilder().setString(insertingString,elementsOfEquation.first().getPosition());
+            equationTreeSet.addAll(elementsOfEquation);
 
-        increasePositionOfElements(elementsOfEquation.first(),size);
-        cursorPosition=cursorPosition+size;
-        totalSizeOfInputString=totalSizeOfInputString+size;
-        return equationTreeSet.addAll(elementsOfEquation);
+            return new ActionsResult[]{ actionResult.build()};
+        }
+        else return new ActionsResult[] {ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getUserInputHasTooManySymbols()).build()};
 
+    }
+    public ActionsResult[] insertNewDigitInNumber(Number number, String insertingValue)
+    {
+        if(number.getNumberOfDigits()<Number.MAXIMUM_NUMBER_SIZE&&equationTreeSet.last().getLastPosition()+1<=100)
+        {
+            number.increaseNumberOfDigits(insertingValue.length());
+            increasePositionOfElements(number,insertingValue.length());
+            ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString(insertingValue,cursorPosition);
+            cursorPosition=cursorPosition+insertingValue.length();
+            return new ActionsResult[]{builder.build()};
+        }
+        UserInputException exception;
+        if(equationTreeSet.last().getLastPosition()+insertingValue.length()>100)
+            exception = UserInputExceptionsFactory.getUserInputHasTooManySymbols();
+        else
+            exception=UserInputExceptionsFactory.getNumberToBigForInsertion();
+        return new ActionsResult[]{ ActionsResult.Builder.createActionWithErrorBuilder().setException(exception).build()};
     }
     private  void increasePositionOfElements(ElementOfEquation smalestElement,int increasingSize) {
         SortedSet<ElementOfEquation> increasingElements=equationTreeSet.tailSet(smalestElement);
@@ -117,26 +174,36 @@ public class EquationTreeSetManager  {
 
 
     }
-    public void deleteElements(TreeSet<ElementOfEquation> elementsOfEquation,int size) {
+    public ActionsResult[] deleteElements(TreeSet<ElementOfEquation> elementsOfEquation,int size) {
 
         equationTreeSet.removeAll(elementsOfEquation);
         increasePositionOfElements(elementsOfEquation.first(),size);
+        checkTreeSetElementsCorrect();
         cursorPosition=cursorPosition-size;
-        totalSizeOfInputString=totalSizeOfInputString-size;
+        for (ElementOfEquation elemnts :
+                elementsOfEquation) {
+            
+        }
+        return 
     }
 
 
 
 
-    private void addBranches(Branch branch)
+    private void addBranchesToBranchTreeSet(Branch branch)
     {
-        if(branch.isOpening())
-            numberOfUnclosedBranch++;
-        else
-            numberOfUnclosedBranch--;
+        String inseringString;
+        if(branch.isOpening()) {
+            unclosedBranchNumber++;
+            inseringString="(";
+        }
+        else {
+            unclosedBranchNumber--;
+            inseringString=")";
+        }
         TreeSet<ElementOfEquation> addingBranch = new TreeSet<ElementOfEquation>();
         addingBranch.add(branch);
-        insertNewValueToTreeSet(addingBranch,1);
+        insertNewValueToTreeSet(addingBranch,inseringString);
         branches.add(branch);
         recalculateBranch();
     }
@@ -172,6 +239,51 @@ public class EquationTreeSetManager  {
 
     }
 
+    @Override
+    public LiveData<ActionsResult[]> getLiveData() {
+        return resultsOfEquations;
+    }
+
+    @Override
+    public void addAction(ButtonsTag tag) {
+        stateController.addAction(tag);
+    }
+
+    @Override
+    public void addDigits(ButtonsTag tag) {
+        stateController.addAction(tag);
+    }
+
+    @Override
+    public void addBranches() {
+        stateController.addBranches();
+    }
+
+    @Override
+    public void changeSign() {
+        stateController.changeSign();
+    }
+
+    @Override
+    public void addDot() {
+         stateController.addDot();
+    }
+
+    @Override
+    public void delete() {
+        stateController.delete();
+    }
+
+    @Override
+    public void executePercentCalculation() {
+       stateController.executePercentCalculation();
+    }
+
+    public void calculateTreeSet() {
+        calculator.addNewCalculation(equationTreeSet);
+
+    }
+
 
     public class CursorStateController extends CursorState implements CalculateInterface {
 
@@ -191,45 +303,45 @@ public class EquationTreeSetManager  {
         }
 
         @Override
-        public ActionsResult addAction(ButtonsTag tag)  {
-            return currentState.addAction(tag);
+        public void addAction(ButtonsTag tag)  {
+             currentState.addAction(tag);
         }
 
         @Override
-        public ActionsResult addDigits(ButtonsTag tag)
+        public void addDigits(ButtonsTag tag)
         {
-            return currentState.addDigits(tag);
+             currentState.addDigits(tag);
         }
 
         @Override
-        public ActionsResult addBranches()  {
-            return currentState.addBranches();
+        public void addBranches()  {
+             currentState.addBranches();
         }
 
         @Override
-        public ActionsResult changeSign()  {
-            return currentState.changeSign();
-        }
-
-
-
-
-        @Override
-        public ActionsResult addDot()  {
-            return currentState.addDot();
+        public void changeSign()  {
+            currentState.changeSign();
         }
 
 
 
 
         @Override
-        public ActionsResult delete() {
-            return currentState.delete();
+        public void addDot()  {
+             currentState.addDot();
+        }
+
+
+
+
+        @Override
+        public void delete() {
+             currentState.delete();
         }
 
         @Override
-        public ActionsResult[] executePercentCalculation()  {
-            return currentState.executePercentCalculation();
+        public void executePercentCalculation()  {
+            currentState.executePercentCalculation();
         }
 
         public void defineCurrentState(ElementOfEquation[]nearestElements)
@@ -276,6 +388,14 @@ public class EquationTreeSetManager  {
             currentState=userInputIsEmpty;
         }
 
+        public void clearAll() {
+            int lastPosition=equationTreeSet.last().getLastPosition();
+            resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createDeletingActionBuilder().setFromPosition(0).setToPosition(lastPosition).build()});
+            equationTreeSet.clear();
+            branches.clear();
+            cursorPosition=0;
+            unclosedBranchNumber=0;
+        }
 
 
         public class CursorBetweenNumberAndAction extends CursorState implements CalculateInterface {
@@ -426,21 +546,32 @@ public class EquationTreeSetManager  {
         }
         public class CursorWithinNumber extends CursorState implements CalculateInterface {
             @Override
-            public ActionsResult addAction(ButtonsTag tag) {
+            public void addAction(ButtonsTag tag) {
                 Number oldNumber=(Number) closestElements[0];
                 if(oldNumber.defineFirstDigitPositionRelativeToStartOfString()!=cursorPosition)
                 {
                     Action newAction=new Action(cursorPosition,String.valueOf(tag.getText()));
                     Number newNumber=oldNumber.separateNumber(cursorPosition);
-
+                    String insertingString;
+                    int increasingSizeOfPosition=0;
+                    if(newNumber.getDotPosition()==0)
+                    {
+                        newNumber.increaseNumberOfDigits(1);
+                        insertingString=tag.getText()+"0";
+                        increasingSizeOfPosition=2;
+                    }
+                    else {
+                        insertingString = tag.getText().toString();
+                        increasingSizeOfPosition=1;
+                    }
                     newNumber.increasePosition(1);
                     ActionsResult.Builder builder;
                     TreeSet<ElementOfEquation> insertingValues=new TreeSet<>();
                     insertingValues.add(newAction);
                     insertingValues.add(newNumber);
-                    if(insertNewValueToTreeSet(insertingValues,1)) {
+                    if(insertNewValueToTreeSet(insertingValues,increasingSizeOfPosition)) {
                         builder = ActionsResult.Builder.createInsertingBuilder()
-                                .setString(String.valueOf(tag.getText()), newAction.getPosition());
+                                .setString(insertingString, newAction.getPosition());
                         setCursorBetweenNumberAndActionState();
                         CursorStateController.setClosestElements(newAction,newNumber);
                     }
@@ -450,76 +581,81 @@ public class EquationTreeSetManager  {
 
 
 
-                    return builder.build();
+                    resultLiveData.setValue(new ActionsResult[]{builder.build()});
 
                 }
                 else
                 {
                     ActionsResult.Builder builder=ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory
                             .getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName()));
-                    return builder.build();
+                    resultLiveData.setValue(new ActionsResult[]{builder.build()});
                 }
             }
 
             @Override
-            public ActionsResult addDigits(ButtonsTag tag) {
+            public void addDigits(ButtonsTag tag) {
                 ActionsResult.Builder builder;
-                if(((Number)closestElements[0]).increaseNumberOfDigits(1));
+                if(((Number)closestElements[0]).increaseNumberOfDigits(1))
                 {builder=ActionsResult.Builder.createInsertingBuilder().setString(String.valueOf(tag),cursorPosition);
-                cursorPosition++;}
-                return builder.build();
+                cursorPosition++;
+                increasePositionOfElements(closestElements[0],1);}
+                else
+                {
+                    builder=ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getUserInputHasTooManySymbols());
+                }
+                resultLiveData.setValue(new ActionsResult[]{builder.build()});
+
             }
 
             @Override
-            public ActionsResult addBranches() {
+            public void addBranches() {
                 Number closestNumber = (Number)closestElements[0];
                 if(cursorPosition != closestNumber.getFirstDigitPosition())
                 {
+
                     if(unclosedBranchNumber==0)
                     {
                         Branch newBranch=new Branch(cursorPosition,true);
                         Action action=new Action(cursorPosition-1,"X");
                         Number newNumber=((Number)closestElements[0]).separateNumber(cursorPosition);
                         newNumber.increasePosition(2);
+
+
+                        addBranchesToBranchTreeSet(newBranch);
                         TreeSet<ElementOfEquation> newInsertion=new TreeSet<>();
-                        newInsertion.add(newBranch);
                         newInsertion.add(action);
                         newInsertion.add(newNumber);
                         ActionsResult.Builder builder;
-                        if(insertNewValueToTreeSet(newInsertion,2))
-                        builder=ActionsResult.Builder.createInsertingBuilder().setString("X(",action.getPosition());
+                        if(insertNewValueToTreeSet(newInsertion,1))
+                            builder=ActionsResult.Builder.createInsertingBuilder().setString("X(",action.getPosition());
                         else
                             builder=ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getUserInputHasTooManySymbols());
-                        return builder.build();
+                        resultLiveData.setValue(new ActionsResult[]{builder.build()});
+                        return;
 
                     }
                     else
                     {
-
-
                         Branch openingBranch= getPreviousOpeningBranches();
-                        if(openingBranch==null)
-                            return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.AddingBranchImpossibleInThisPosition()).build();
-                        else
-                        {
+
                             Branch newBranch=new Branch(cursorPosition,false);
                             openingBranch.setPairBranch(newBranch);
                             newBranch.setPairBranch(openingBranch);
                             Action action=new Action(cursorPosition+1,"x");
-                            EquationTreeSetManager.this.addBranches(newBranch);
+                            Number newNumber=closestNumber.separateNumber(cursorPosition);
+                            addBranchesToBranchTreeSet(newBranch);
                             TreeSet<ElementOfEquation> addingElemnt=new TreeSet<>();
                             addingElemnt.add(action);
+                            addingElemnt.add(newNumber);
                             insertNewValueToTreeSet(addingElemnt,1);
-                            return  ActionsResult.Builder.createInsertingBuilder().setString(")X",newBranch.getPosition()).build();
+                            resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createInsertingBuilder().setString(")X",newBranch.getPosition()).build()});
 
-                        }
+
                     }
                 }
                 else
                 {
-
-
-                    return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.AddingBranchImpossibleInThisPosition()).build();
+                    resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.AddingBranchImpossibleInThisPosition()).build()});
                 }
 
             }
@@ -535,7 +671,7 @@ public class EquationTreeSetManager  {
                 }
                 else
                 {
-                    
+
                     actionResult=ActionsResult.Builder.createInsertingBuilder().setString("(-",number.getPosition()).build();
                 }
                 number.setMinus(!number.isMinus());
@@ -699,76 +835,89 @@ public class EquationTreeSetManager  {
              * @return
              */
             @Override
-            public ActionsResult addAction(ButtonsTag tag) {
-                return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
+            public void addAction(ButtonsTag tag) {
+                resultLiveData.setValue(ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
             }
 
             @Override
-            public ActionsResult addDigits(ButtonsTag tag)
+            public void addDigits(ButtonsTag tag)
             {
                 Number newElement=new Number(cursorPosition);
                 newElement.setNumberOfDigits(1);
                 ActionsResult.Builder builder;
                 TreeSet<ElementOfEquation> newTreeSet=new TreeSet<>();
                 newTreeSet.add(newElement);
-               EquationTreeSetManager.this.insertNewValueToTreeSet(newTreeSet,1);
-                builder=ActionsResult.Builder.createInsertingBuilder().setString(String.valueOf(tag.getText()),cursorPosition);
+                ActionsResult.Builder builder=EquationTreeSetManager.this.insertNewValueToTreeSet(newTreeSet,1);
+
 
                 CursorStateController.this.setCursorWithinNumberState();
                 CursorStateController.setClosestElements(newElement);
 
-                return builder.build();
+                resultLiveData.setValue(new ActionsResult[]{builder.build()});
 
 
 
             }
 
             @Override
-            public ActionsResult addBranches() {
+            public void addBranches() {
                 Branch newElement=new Branch(cursorPosition);
                 newElement.setOpening(true);
                 newElement.setClosed(false);
                 branches.add(newElement);
-                EquationTreeSetManager.this.addBranches(newElement);
+                EquationTreeSetManager.this.addBranchesToBranchTreeSet(newElement);
                 ActionsResult.Builder builder=ActionsResult.Builder.createInsertingBuilder().setString("(",cursorPosition);
 
                 CursorStateController.this.setCursorNearBranchesState();
                 CursorStateController.setClosestElements(newElement);
-                return builder.build();
+                resultLiveData.setValue(new ActionsResult[]{ builder.build()});
 
 
 
             }
 
             @Override
-            public ActionsResult changeSign() {
-                return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
+            public void changeSign() {
+                resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory
+                        .getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build()});
             }
 
 
 
 
             @Override
-            public ActionsResult addDot() {
-                return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
+            public void addDot() {
+                resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory
+                        .getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build()});
             }
 
 
 
 
             @Override
-            public ActionsResult delete() {
-                return ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build();
+            public void delete() {
+                resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory
+                        .getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build()});
             }
 
             @Override
-            public ActionsResult[] executePercentCalculation() {
-                return new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory.getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build()};
+            public void executePercentCalculation() {
+                resultLiveData.setValue(new ActionsResult[]{ActionsResult.Builder.createActionWithErrorBuilder().setException(UserInputExceptionsFactory
+                        .getActionImpossibleInCurrentState(this.getClass().getEnclosingMethod().getName(),this.getClass().getSimpleName().toString())).build()});
             }
         }
 
 
 
 
+    }
+    private class ObserverForMediatorLiveData implements Observer<ActionsResult[]>
+    {
+
+
+        @Override
+        public void onChanged(ActionsResult[] actionsResult) {
+            resultsOfEquations.setValue(actionsResult);
+        }
     }
 }

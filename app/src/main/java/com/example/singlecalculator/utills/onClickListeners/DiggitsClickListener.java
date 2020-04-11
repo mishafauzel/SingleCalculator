@@ -1,25 +1,38 @@
 package com.example.singlecalculator.utills.onClickListeners;
 
+import android.media.audiofx.DynamicsProcessing;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.Observer;
 
 import com.example.singlecalculator.utills.ButtonsTag;
 import com.example.singlecalculator.utills.FirstPanelStrategy;
-import com.example.singlecalculator.utills.equation.Equation;
-import com.example.singlecalculator.utills.calculations.Calculator;
+import com.example.singlecalculator.utills.equation.EquationTreeSetManager;
+import com.example.singlecalculator.utills.equation.actions.ActionsResult;
 import com.example.singlecalculator.utills.equation.exceptions.UserInputException;
+import com.example.singlecalculator.utills.strategiesInterdaces.ActionsResultLiveDataOwner;
 
-public class DiggitsClickListener implements View.OnClickListener {
+public class DiggitsClickListener implements View.OnClickListener, ActionsResultLiveDataOwner {
     private static final String TAG = "DiggitsClickListener";
 
-    private Equation equation;
-    private FirstPanelStrategy strategy;
-    public void setStrategy(FirstPanelStrategy strategy)
-    {
-        this.strategy=strategy;
-    }
-    public void setEquation(Equation equation) {
-        this.equation = equation;
+    private EquationTreeSetManager manager;
+
+    private MediatorLiveData<ActionsResult[]> resultMediatorLiveData;
+
+    public DiggitsClickListener() {
+        manager=EquationTreeSetManager.getInstance();
+
+        resultMediatorLiveData=new MediatorLiveData<>();
+        resultMediatorLiveData.addSource(((ActionsResultLiveDataOwner) manager).getLiveData(), new Observer<ActionsResult[]>() {
+            @Override
+            public void onChanged(ActionsResult[] actionsResult) {
+                resultMediatorLiveData.setValue(actionsResult);
+            }
+        });
     }
 
     @Override
@@ -30,65 +43,53 @@ public class DiggitsClickListener implements View.OnClickListener {
         switch ( tag.buttonType)
         {
             case digit: {
-                try {
-                    equation.addDigits(tag);
-                } catch (UserInputException ex) {
-                    ex.printStackTrace();
-                    strategy.handleUserInputException(ex);
-                }
+
+                    manager.addDigits(tag);
+
+
                 break;
             }
             case action: {
-                try {
-                    equation.addAction(tag);
-                }
-                catch (UserInputException ex)
-                {
-                    ex.printStackTrace();
-                    strategy.handleUserInputException(ex);
-                }
+
+                    manager.addAction(tag);
+
                 break;
             }
             case delete:
-                equation.clearAll();
+                manager.clearAll();
                 break;
             case equals:
-               equation.calculateTreeSet();
+               manager.calculateTreeSet();
                 break;
             case percent:
-                try {
-                    equation.executePercentCalculation();
-                } catch (UserInputException e) {
-                    e.printStackTrace();
-                    strategy.handleUserInputException(e);
-                }
+
+                    manager.executePercentCalculation();
+
                 break;
             case branches:
-                try {
-                    equation.addBranches();
-                } catch (UserInputException e) {
-                    e.printStackTrace();
-                    strategy.handleUserInputException(e);
-                }
+
+                    manager.addBranches();
+
                 break;
             case chengeSign:
-                try {
-                    equation.changeSign();
-                } catch (UserInputException e) {
-                    e.printStackTrace();
-                    strategy.handleUserInputException(e);
-                }
-                break;
-            case dot:
-                try {
-                    equation.addDot();
-                } catch (UserInputException e) {
-                    e.printStackTrace();
-                    strategy.handleUserInputException(e);
-                }
-                break;
+            {
+                    manager.changeSign();
 
+                break;}
+            case dot:
+            { manager.addDot();
+                break;}
+            case equation:
+            {
+               int chosenPosition = ((EditText)view).getSelectionStart();
+               manager.setCursorPosition(chosenPosition);
+            }
         }
 
+    }
+
+    @Override
+    public LiveData<ActionsResult[]> getLiveData() {
+        return resultMediatorLiveData;
     }
 }

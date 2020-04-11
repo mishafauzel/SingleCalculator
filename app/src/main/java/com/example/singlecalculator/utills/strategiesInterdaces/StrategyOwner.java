@@ -9,5 +9,5 @@ import com.example.singlecalculator.utills.equation.exceptions.UserInputExceptio
 public interface StrategyOwner {
     TextView[] getButtons(int[] idOfButtons);
     EditText getEquation();
-    void showErrorToast(UserInputException exception);
+
 }

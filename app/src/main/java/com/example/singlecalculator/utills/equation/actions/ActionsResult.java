@@ -9,16 +9,24 @@ import com.example.singlecalculator.utills.equation.utills.ElementOfEquation;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ActionsResult {
+public class ActionsResult implements Comparable<ActionsResult>{
 
 
     public final StateOfInsertingValues state;
+    public static int numberOfAction=0;
+    public final int startPosition;
+
+    @Override
+    public int compareTo(ActionsResult o) {
+        return 0;
+    }
 
 
-    public enum StateOfInsertingValues{INSERTING,DELETING,ERROR,MOVING}
+    public enum StateOfInsertingValues{INSERTING,DELETING,ERROR,MOVING,CALCULATION_RESULT_AFTER_EQUALS,CALCULATION_RESULT}
 
-    protected ActionsResult(StateOfInsertingValues state) {
+    protected ActionsResult(StateOfInsertingValues state,int startPosition) {
         this.state=state;
+        this.startPosition=startPosition;
     }
 
 

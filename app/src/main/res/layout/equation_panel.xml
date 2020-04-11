@@ -13,7 +13,7 @@
         android:inputType="textPersonName" />
 
     <TextView
-        android:id="@+id/textView22"
+        android:id="@+id/result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
